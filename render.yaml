@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: diginest-io
+    env: node
+    plan: free
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: NEXT_TELEMETRY_DISABLED
+        value: 1
+      - key: NODE_ENV
+        value: production
+      - key: SKIP_ENV_VALIDATION
+        value: 1
+    domains:
+      - diginest.onrender.com
