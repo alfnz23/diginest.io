@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { uploadImage, deleteImage } from "@/lib/cloudinary";
 
+// Force dynamic rendering for API routes
+export const dynamic = 'force-dynamic';
+
 // Verify admin authentication
 function verifyAdmin(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
