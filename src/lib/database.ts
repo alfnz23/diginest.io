@@ -43,179 +43,279 @@ export interface ProductImage {
   created_at: string;
 }
 
-// Supabase client with proper environment variable validation
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Lazy initialization of Supabase clients to prevent build-time errors
+let supabaseClient: any = null;
+let supabaseAdminClient: any = null;
 
-// Validate required environment variables
-if (!supabaseUrl) {
-  throw new Error("Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL");
+// Get public client (for client-side operations)
+export function getSupabaseClient() {
+  if (!supabaseClient) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn("Supabase environment variables not configured");
+      return null;
+    }
+
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return supabaseClient;
 }
 
-if (!supabaseAnonKey) {
-  throw new Error("Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY");
+// Get admin client (for server-side operations)
+export function getSupabaseAdminClient() {
+  if (!supabaseAdminClient) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn("Supabase admin environment variables not configured");
+      return null;
+    }
+
+    supabaseAdminClient = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return supabaseAdminClient;
 }
 
-if (!supabaseServiceKey) {
-  throw new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
-}
+// Legacy exports for backward compatibility
+export const supabase = {
+  get client() { return getSupabaseClient(); }
+};
+export const supabaseAdmin = {
+  get client() { return getSupabaseAdminClient(); }
+};
 
-// Public client (for client-side operations)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Admin client (for server-side operations)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-// Database operations - converted from static class to functions
+// Database operations - with proper error handling
 
 // Get all products
 export async function getAllProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+  const client = getSupabaseClient();
+  if (!client) return [];
 
-  if (error) {
-    console.error("Error fetching products:", error);
+  try {
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Database error:", error);
     return [];
   }
-
-  return data || [];
 }
 
 // Get products by category
 export async function getProductsByCategory(category: string): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("category", category)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+  const client = getSupabaseClient();
+  if (!client) return [];
 
-  if (error) {
-    console.error("Error fetching products by category:", error);
+  try {
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .eq("category", category)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching products by category:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Database error:", error);
     return [];
   }
-
-  return data || [];
 }
 
 // Get single product by ID
 export async function getProductById(id: string): Promise<Product | null> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", id)
-    .eq("is_active", true)
-    .single();
+  const client = getSupabaseClient();
+  if (!client) return null;
 
-  if (error) {
-    console.error("Error fetching product:", error);
+  try {
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .eq("id", id)
+      .eq("is_active", true)
+      .single();
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Database error:", error);
     return null;
   }
-
-  return data;
 }
 
 // Search products
 export async function searchProducts(query: string): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+  const client = getSupabaseClient();
+  if (!client) return [];
 
-  if (error) {
-    console.error("Error searching products:", error);
+  try {
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error searching products:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Database error:", error);
     return [];
   }
-
-  return data || [];
 }
 
 // Admin functions using service role client
 
 // Create new product (admin only)
 export async function createProduct(productData: Omit<Product, "id" | "created_at" | "updated_at">): Promise<Product | null> {
-  const { data, error } = await supabaseAdmin
-    .from("products")
-    .insert([productData])
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error creating product:", error);
-    throw new Error(`Failed to create product: ${error.message}`);
+  const client = getSupabaseAdminClient();
+  if (!client) {
+    throw new Error("Database not configured");
   }
 
-  return data;
+  try {
+    const { data, error } = await client
+      .from("products")
+      .insert([productData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating product:", error);
+      throw new Error(`Failed to create product: ${error.message}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  }
 }
 
 // Update product (admin only)
 export async function updateProduct(id: string, productData: Partial<Product>): Promise<Product | null> {
-  const { data, error } = await supabaseAdmin
-    .from("products")
-    .update({ ...productData, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error updating product:", error);
-    throw new Error(`Failed to update product: ${error.message}`);
+  const client = getSupabaseAdminClient();
+  if (!client) {
+    throw new Error("Database not configured");
   }
 
-  return data;
+  try {
+    const { data, error } = await client
+      .from("products")
+      .update({ ...productData, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating product:", error);
+      throw new Error(`Failed to update product: ${error.message}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  }
 }
 
 // Delete product (admin only)
 export async function deleteProduct(id: string): Promise<boolean> {
-  const { error } = await supabaseAdmin
-    .from("products")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error("Error deleting product:", error);
-    throw new Error(`Failed to delete product: ${error.message}`);
+  const client = getSupabaseAdminClient();
+  if (!client) {
+    throw new Error("Database not configured");
   }
 
-  return true;
+  try {
+    const { error } = await client
+      .from("products")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting product:", error);
+      throw new Error(`Failed to delete product: ${error.message}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  }
 }
 
 // Get all products for admin (includes inactive)
 export async function getAllProductsForAdmin(): Promise<Product[]> {
-  const { data, error } = await supabaseAdmin
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const client = getSupabaseAdminClient();
+  if (!client) return [];
 
-  if (error) {
-    console.error("Error fetching all products:", error);
+  try {
+    const { data, error } = await client
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching all products:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Database error:", error);
     return [];
   }
-
-  return data || [];
 }
 
 // Toggle product active status
 export async function toggleProductStatus(id: string, isActive: boolean): Promise<Product | null> {
-  const { data, error } = await supabaseAdmin
-    .from("products")
-    .update({ is_active: isActive, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error toggling product status:", error);
-    throw new Error(`Failed to toggle product status: ${error.message}`);
+  const client = getSupabaseAdminClient();
+  if (!client) {
+    throw new Error("Database not configured");
   }
 
-  return data;
+  try {
+    const { data, error } = await client
+      .from("products")
+      .update({ is_active: isActive, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error toggling product status:", error);
+      throw new Error(`Failed to toggle product status: ${error.message}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  }
 }
 
 // Get product statistics
@@ -225,23 +325,33 @@ export async function getProductStats(): Promise<{
   totalRevenue: number;
   averageRating: number;
 }> {
-  const { data: products, error } = await supabaseAdmin
-    .from("products")
-    .select("price, rating, reviews_count, is_active");
-
-  if (error) {
-    console.error("Error fetching product stats:", error);
+  const client = getSupabaseAdminClient();
+  if (!client) {
     return { totalProducts: 0, activeProducts: 0, totalRevenue: 0, averageRating: 0 };
   }
 
-  const totalProducts = products?.length || 0;
-  const activeProducts = products?.filter(p => p.is_active).length || 0;
-  const totalRevenue = products?.reduce((sum, p) => sum + (p.price * p.reviews_count), 0) || 0;
-  const averageRating = products?.length > 0
-    ? products.reduce((sum, p) => sum + p.rating, 0) / products.length
-    : 0;
+  try {
+    const { data: products, error } = await client
+      .from("products")
+      .select("price, rating, reviews_count, is_active");
 
-  return { totalProducts, activeProducts, totalRevenue, averageRating };
+    if (error) {
+      console.error("Error fetching product stats:", error);
+      return { totalProducts: 0, activeProducts: 0, totalRevenue: 0, averageRating: 0 };
+    }
+
+    const totalProducts = products?.length || 0;
+    const activeProducts = products?.filter(p => p.is_active).length || 0;
+    const totalRevenue = products?.reduce((sum, p) => sum + (p.price * p.reviews_count), 0) || 0;
+    const averageRating = products?.length > 0
+      ? products.reduce((sum, p) => sum + p.rating, 0) / products.length
+      : 0;
+
+    return { totalProducts, activeProducts, totalRevenue, averageRating };
+  } catch (error) {
+    console.error("Database error:", error);
+    return { totalProducts: 0, activeProducts: 0, totalRevenue: 0, averageRating: 0 };
+  }
 }
 
 // Database setup SQL (run this in Supabase SQL editor)

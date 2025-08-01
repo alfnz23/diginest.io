@@ -91,7 +91,7 @@ export default function HomePageClient({
             {/* Version 43 Indicator */}
             <div className="mb-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ✅ Version 45 - Production Ready & Deployed
+                ✅ Version 48 - Build Issues Fixed & Production Ready
               </span>
             </div>
 
