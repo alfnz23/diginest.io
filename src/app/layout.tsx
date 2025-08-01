@@ -14,7 +14,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "DigiNest.io - Premium Digital Products",
-  description: "Discover beautifully crafted eBooks, planners, schedulers, and digital tools designed to elevate your workflow and inspire your best work.",
+  description:
+    "Discover beautifully crafted eBooks, planners, schedulers, and digital tools designed to elevate your workflow and inspire your best work.",
 };
 
 export default function RootLayout({
@@ -50,9 +51,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body
-        className={`${inter.variable} font-sans antialiased`}
-      >
+      <body className={`${inter.variable} font-sans antialiased`}>
         <I18nProvider>
           <AuthProvider>
             <CartProvider>

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface ElegantMovingBackgroundProps {
-  intensity?: 'low' | 'medium' | 'high';
+  intensity?: "low" | "medium" | "high";
 }
 
-export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingBackgroundProps) {
+export function ElegantMovingBackground({
+  intensity = "medium",
+}: ElegantMovingBackgroundProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
 
@@ -17,23 +19,24 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const handleMouseMove = (e: MouseEvent) => {
         setMousePosition({
           x: (e.clientX / window.innerWidth) * 100,
-          y: (e.clientY / window.innerHeight) * 100
+          y: (e.clientY / window.innerHeight) * 100,
         });
       };
 
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => window.removeEventListener('mousemove', handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
     }
   }, []);
 
   if (!isVisible) return null;
 
-  const particleCount = intensity === 'low' ? 30 : intensity === 'medium' ? 50 : 80;
-  const waveCount = intensity === 'low' ? 4 : intensity === 'medium' ? 6 : 10;
+  const particleCount =
+    intensity === "low" ? 30 : intensity === "medium" ? 50 : 80;
+  const waveCount = intensity === "low" ? 4 : intensity === "medium" ? 6 : 10;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
@@ -41,11 +44,12 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
       <motion.div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
-          backgroundSize: '400% 400%',
+          background:
+            "linear-gradient(45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)",
+          backgroundSize: "400% 400%",
         }}
         animate={{
-          backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
         }}
         transition={{
           duration: 15,
@@ -66,14 +70,14 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
         const startY = Math.random() * 100;
 
         const colors = [
-          'rgba(102, 126, 234, 0.15)',
-          'rgba(118, 75, 162, 0.15)',
-          'rgba(240, 147, 251, 0.15)',
-          'rgba(245, 87, 108, 0.15)',
-          'rgba(79, 172, 254, 0.15)',
-          'rgba(56, 239, 125, 0.15)',
-          'rgba(255, 195, 113, 0.15)',
-          'rgba(255, 107, 107, 0.15)'
+          "rgba(102, 126, 234, 0.15)",
+          "rgba(118, 75, 162, 0.15)",
+          "rgba(240, 147, 251, 0.15)",
+          "rgba(245, 87, 108, 0.15)",
+          "rgba(79, 172, 254, 0.15)",
+          "rgba(56, 239, 125, 0.15)",
+          "rgba(255, 195, 113, 0.15)",
+          "rgba(255, 107, 107, 0.15)",
         ];
 
         return (
@@ -84,7 +88,7 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
               width: size,
               height: size,
               background: `radial-gradient(circle, ${colors[i]}, transparent 70%)`,
-              filter: 'blur(20px)',
+              filter: "blur(20px)",
             }}
             initial={{
               x: `${startX}%`,
@@ -125,11 +129,11 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
                 rgba(118, 75, 162, 0.4) 50%,
                 rgba(240, 147, 251, 0.3) 75%,
                 transparent 100%)`,
-              borderRadius: '50%',
-              filter: 'blur(40px)',
+              borderRadius: "50%",
+              filter: "blur(40px)",
             }}
             animate={{
-              x: ['-100%', '100%'],
+              x: ["-100%", "100%"],
               scaleY: [1, 1.5, 1],
               opacity: [0, 0.4, 0],
             }}
@@ -146,8 +150,8 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
       {/* Sophisticated geometric patterns */}
       {[...Array(12)].map((_, i) => {
         const size = 30 + (i % 4) * 20;
-        const x = 5 + (i * 8) % 90;
-        const y = 10 + (i * 12) % 80;
+        const x = 5 + ((i * 8) % 90);
+        const y = 10 + ((i * 12) % 80);
         const rotation = i * 30;
 
         return (
@@ -181,7 +185,7 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
             {i % 4 === 2 && (
               <div
                 className="w-full h-full border-2 border-pink-300/20"
-                style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+                style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
               />
             )}
             {i % 4 === 3 && (
@@ -200,7 +204,12 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
         const delay = Math.random() * 10;
 
         const colors = [
-          '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#38ef7d'
+          "#667eea",
+          "#764ba2",
+          "#f093fb",
+          "#f5576c",
+          "#4facfe",
+          "#38ef7d",
         ];
 
         return (
@@ -235,11 +244,12 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
       <motion.div
         className="absolute w-96 h-96 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, rgba(240, 147, 251, 0.1) 50%, transparent 70%)',
-          filter: 'blur(50px)',
+          background:
+            "radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, rgba(240, 147, 251, 0.1) 50%, transparent 70%)",
+          filter: "blur(50px)",
           left: `${mousePosition.x}%`,
           top: `${mousePosition.y}%`,
-          transform: 'translate(-50%, -50%)',
+          transform: "translate(-50%, -50%)",
         }}
         animate={{
           scale: [1, 1.3, 1],
@@ -256,8 +266,9 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
       <motion.div
         className="absolute top-0 left-0 w-80 h-80"
         style={{
-          background: 'radial-gradient(circle, rgba(102, 126, 234, 0.2) 0%, transparent 70%)',
-          filter: 'blur(60px)',
+          background:
+            "radial-gradient(circle, rgba(102, 126, 234, 0.2) 0%, transparent 70%)",
+          filter: "blur(60px)",
         }}
         animate={{
           scale: [1, 1.4, 1],
@@ -273,8 +284,9 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
       <motion.div
         className="absolute bottom-0 right-0 w-80 h-80"
         style={{
-          background: 'radial-gradient(circle, rgba(240, 147, 251, 0.2) 0%, transparent 70%)',
-          filter: 'blur(60px)',
+          background:
+            "radial-gradient(circle, rgba(240, 147, 251, 0.2) 0%, transparent 70%)",
+          filter: "blur(60px)",
         }}
         animate={{
           scale: [1.4, 1, 1.4],
@@ -292,9 +304,10 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
       <motion.div
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px]"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(118, 75, 162, 0.15), transparent)',
-          filter: 'blur(80px)',
-          borderRadius: '50%',
+          background:
+            "linear-gradient(90deg, transparent, rgba(118, 75, 162, 0.15), transparent)",
+          filter: "blur(80px)",
+          borderRadius: "50%",
         }}
         animate={{
           rotate: [0, 360],
@@ -316,10 +329,10 @@ export function ElegantMovingBackground({ intensity = 'medium' }: ElegantMovingB
             linear-gradient(rgba(102, 126, 234, 0.3) 1px, transparent 1px),
             linear-gradient(90deg, rgba(102, 126, 234, 0.3) 1px, transparent 1px)
           `,
-          backgroundSize: '60px 60px',
+          backgroundSize: "60px 60px",
         }}
         animate={{
-          backgroundPosition: ['0px 0px', '60px 60px', '0px 0px'],
+          backgroundPosition: ["0px 0px", "60px 60px", "0px 0px"],
         }}
         transition={{
           duration: 20,

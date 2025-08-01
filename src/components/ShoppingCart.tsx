@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -14,20 +21,24 @@ import { triggerAbandonedCart } from "@/lib/emailAutomation";
 import { ShoppingBag, Plus, Minus, Trash2, CreditCard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { safeNavigate, safeLocalStorage } from "@/lib/browser-utils";
 
 export function ShoppingCart() {
-  const { items, total, itemCount, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { items, total, itemCount, updateQuantity, removeFromCart, clearCart } =
+    useCart();
   const { user } = useAuth();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal">(
+    "stripe",
+  );
   const [customerInfo, setCustomerInfo] = useState({
-    email: user?.email || '',
-    name: user?.name || '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: ''
+    email: user?.email || "",
+    name: user?.name || "",
+    address: "",
+    city: "",
+    postalCode: "",
+    country: "",
   });
 
   // Calculate pricing
@@ -39,60 +50,68 @@ export function ShoppingCart() {
     setIsCheckingOut(true);
 
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       const checkoutData = {
         cartItems: items,
         customerEmail: customerInfo.email,
         customerName: customerInfo.name,
-        successUrl: `${window.location.origin}/checkout/success`,
-        cancelUrl: `${window.location.origin}/checkout/cancel`
+        successUrl: `${safeNavigate.getOrigin()}/checkout/success`,
+        cancelUrl: `${safeNavigate.getOrigin()}/checkout/cancel`,
       };
 
-      if (paymentMethod === 'stripe') {
-        const session = await stripeService.createCheckoutSession(items, customerInfo);
-        window.location.href = session.url;
+      if (paymentMethod === "stripe") {
+        const session = await stripeService.createCheckoutSession(
+          items,
+          customerInfo,
+        );
+        safeNavigate.redirect(session.url);
       } else {
         const order = await paypalService.createOrder(items, customerInfo);
         // In a real implementation, you would redirect to PayPal approval URL
-        console.log('PayPal order created:', order);
-        alert('PayPal checkout would redirect here. Demo only.');
+        console.log("PayPal order created:", order);
+        alert("PayPal checkout would redirect here. Demo only.");
       }
 
       clearCart();
       setIsCheckingOut(false);
       setShowCheckout(false);
-
     } catch (error) {
-      console.error('Checkout failed:', error);
+      console.error("Checkout failed:", error);
       setIsCheckingOut(false);
-      alert('Checkout failed. Please try again.');
+      alert("Checkout failed. Please try again.");
     }
   };
 
   // Trigger abandoned cart email when user closes cart with items
   const handleCartClose = () => {
-    if (items.length > 0 && user && typeof window !== 'undefined') {
+    if (items.length > 0 && user && typeof window !== "undefined") {
       // Trigger abandoned cart email after 2 hours
-      setTimeout(() => {
-        triggerAbandonedCart(user.id, items, total);
-      }, 2 * 60 * 60 * 1000);
+      setTimeout(
+        () => {
+          triggerAbandonedCart(user.id, items, total);
+        },
+        2 * 60 * 60 * 1000,
+      );
     }
   };
 
   // Enhanced abandoned cart tracking
   const handleCartActivity = () => {
-    if (items.length > 0 && user && typeof window !== 'undefined') {
+    if (items.length > 0 && user && typeof window !== "undefined") {
       try {
         // Store cart session for analytics
-        localStorage.setItem('cart_session', JSON.stringify({
-          userId: user.id,
-          items: items,
-          total: total,
-          lastActivity: new Date().toISOString()
-        }));
+        localStorage.setItem(
+          "cart_session",
+          JSON.stringify({
+            userId: user.id,
+            items: items,
+            total: total,
+            lastActivity: new Date().toISOString(),
+          }),
+        );
       } catch (error) {
-        console.error('Failed to save cart session:', error);
+        console.error("Failed to save cart session:", error);
       }
     }
   };
@@ -115,15 +134,17 @@ export function ShoppingCart() {
 
           {/* Payment Method Selection */}
           <div className="mb-6">
-            <Label className="text-sm font-medium mb-3 block">Payment Method</Label>
+            <Label className="text-sm font-medium mb-3 block">
+              Payment Method
+            </Label>
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setPaymentMethod('stripe')}
+                onClick={() => setPaymentMethod("stripe")}
                 className={`p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                  paymentMethod === 'stripe'
-                    ? 'border-neutral-900 bg-neutral-50'
-                    : 'border-neutral-300 hover:border-neutral-400'
+                  paymentMethod === "stripe"
+                    ? "border-neutral-900 bg-neutral-50"
+                    : "border-neutral-300 hover:border-neutral-400"
                 }`}
               >
                 <CreditCard className="h-5 w-5" />
@@ -131,11 +152,11 @@ export function ShoppingCart() {
               </button>
               <button
                 type="button"
-                onClick={() => setPaymentMethod('paypal')}
+                onClick={() => setPaymentMethod("paypal")}
                 className={`p-4 border rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-                  paymentMethod === 'paypal'
-                    ? 'border-neutral-900 bg-neutral-50'
-                    : 'border-neutral-300 hover:border-neutral-400'
+                  paymentMethod === "paypal"
+                    ? "border-neutral-900 bg-neutral-50"
+                    : "border-neutral-300 hover:border-neutral-400"
                 }`}
               >
                 <span className="text-blue-600 font-bold">PayPal</span>
@@ -150,7 +171,12 @@ export function ShoppingCart() {
                 <Input
                   id="name"
                   value={customerInfo.name}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   placeholder="John Doe"
                 />
               </div>
@@ -160,7 +186,12 @@ export function ShoppingCart() {
                   id="email"
                   type="email"
                   value={customerInfo.email}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
                   placeholder="john@example.com"
                 />
               </div>
@@ -171,7 +202,12 @@ export function ShoppingCart() {
               <Input
                 id="address"
                 value={customerInfo.address}
-                onChange={(e) => setCustomerInfo(prev => ({ ...prev, address: e.target.value }))}
+                onChange={(e) =>
+                  setCustomerInfo((prev) => ({
+                    ...prev,
+                    address: e.target.value,
+                  }))
+                }
                 placeholder="123 Main St"
               />
             </div>
@@ -182,7 +218,12 @@ export function ShoppingCart() {
                 <Input
                   id="city"
                   value={customerInfo.city}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, city: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      city: e.target.value,
+                    }))
+                  }
                   placeholder="New York"
                 />
               </div>
@@ -191,7 +232,12 @@ export function ShoppingCart() {
                 <Input
                   id="postal"
                   value={customerInfo.postalCode}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, postalCode: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      postalCode: e.target.value,
+                    }))
+                  }
                   placeholder="10001"
                 />
               </div>
@@ -200,7 +246,12 @@ export function ShoppingCart() {
                 <Input
                   id="country"
                   value={customerInfo.country}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, country: e.target.value }))}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      country: e.target.value,
+                    }))
+                  }
                   placeholder="USA"
                 />
               </div>
@@ -248,7 +299,9 @@ export function ShoppingCart() {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Shopping Cart</h3>
-        <p className="text-sm text-neutral-600">{itemCount} {itemCount === 1 ? 'item' : 'items'}</p>
+        <p className="text-sm text-neutral-600">
+          {itemCount} {itemCount === 1 ? "item" : "items"}
+        </p>
       </div>
 
       {items.length === 0 ? (
@@ -271,7 +324,9 @@ export function ShoppingCart() {
 
                 <div className="flex-1">
                   <h4 className="font-medium text-sm">{item.name}</h4>
-                  <p className="text-xs text-neutral-600 mb-2">${item.price.toFixed(2)}</p>
+                  <p className="text-xs text-neutral-600 mb-2">
+                    ${item.price.toFixed(2)}
+                  </p>
 
                   <div className="flex items-center gap-2">
                     <Button
@@ -282,7 +337,9 @@ export function ShoppingCart() {
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
-                    <span className="text-sm w-8 text-center">{item.quantity}</span>
+                    <span className="text-sm w-8 text-center">
+                      {item.quantity}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"

@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CheckCircle, Download, ArrowLeft, Mail } from "lucide-react";
 import Link from "next/link";
 
@@ -26,18 +32,30 @@ export default function CheckoutSuccessPage() {
   useEffect(() => {
     // Simulate order processing
     const processOrder = async () => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Mock order details
       setOrderDetails({
         orderId: `ORDER-${Date.now()}`,
         total: 74.99,
         items: [
-          { name: "Minimalist Digital Planner", price: 29.99, downloadUrl: "/downloads/planner.zip" },
-          { name: "Productivity Handbook", price: 19.99, downloadUrl: "/downloads/handbook.pdf" },
-          { name: "Self-Care Planner", price: 24.99, downloadUrl: "/downloads/selfcare.zip" }
+          {
+            name: "Minimalist Digital Planner",
+            price: 29.99,
+            downloadUrl: "/downloads/planner.zip",
+          },
+          {
+            name: "Productivity Handbook",
+            price: 19.99,
+            downloadUrl: "/downloads/handbook.pdf",
+          },
+          {
+            name: "Self-Care Planner",
+            price: 24.99,
+            downloadUrl: "/downloads/selfcare.zip",
+          },
         ],
-        customerEmail: "customer@example.com"
+        customerEmail: "customer@example.com",
       });
 
       setIsLoading(false);
@@ -66,7 +84,10 @@ export default function CheckoutSuccessPage() {
             <Link href="/" className="text-2xl font-bold text-neutral-900">
               DigiNest.io
             </Link>
-            <Link href="/" className="flex items-center text-neutral-600 hover:text-neutral-900">
+            <Link
+              href="/"
+              className="flex items-center text-neutral-600 hover:text-neutral-900"
+            >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back to Store
             </Link>
@@ -80,9 +101,12 @@ export default function CheckoutSuccessPage() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
-          <h1 className="text-3xl font-light text-neutral-900 mb-4">Order Complete!</h1>
+          <h1 className="text-3xl font-light text-neutral-900 mb-4">
+            Order Complete!
+          </h1>
           <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-            Thank you for your purchase. Your digital products are ready for download.
+            Thank you for your purchase. Your digital products are ready for
+            download.
           </p>
         </div>
 
@@ -99,12 +123,20 @@ export default function CheckoutSuccessPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {orderDetails?.items.map((item, index) => (
-              <div key={`${item.name}-${index}`} className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+              <div
+                key={`${item.name}-${index}`}
+                className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg"
+              >
                 <div>
                   <h3 className="font-medium text-neutral-900">{item.name}</h3>
-                  <p className="text-sm text-neutral-600">${item.price.toFixed(2)}</p>
+                  <p className="text-sm text-neutral-600">
+                    ${item.price.toFixed(2)}
+                  </p>
                 </div>
-                <Button size="sm" className="bg-neutral-900 hover:bg-neutral-800">
+                <Button
+                  size="sm"
+                  className="bg-neutral-900 hover:bg-neutral-800"
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Download
                 </Button>
@@ -114,7 +146,9 @@ export default function CheckoutSuccessPage() {
             <div className="border-t pt-4 mt-6">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium">Total</span>
-                <span className="text-lg font-bold">${orderDetails?.total.toFixed(2)}</span>
+                <span className="text-lg font-bold">
+                  ${orderDetails?.total.toFixed(2)}
+                </span>
               </div>
             </div>
           </CardContent>

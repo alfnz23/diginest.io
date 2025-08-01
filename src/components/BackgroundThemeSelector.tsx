@@ -11,9 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Palette, Check } from "lucide-react";
 
-type BackgroundTheme = 'light' | 'dark' | 'gradient' | 'cosmic' | 'ocean' | 'sunset';
-type BackgroundIntensity = 'minimal' | 'moderate' | 'intense' | 'maximum';
-type AnimationSpeed = 'slow' | 'normal' | 'fast';
+type BackgroundTheme =
+  | "light"
+  | "dark"
+  | "gradient"
+  | "cosmic"
+  | "ocean"
+  | "sunset";
+type BackgroundIntensity = "minimal" | "moderate" | "intense" | "maximum";
+type AnimationSpeed = "slow" | "normal" | "fast";
 
 interface BackgroundThemeSelectorProps {
   currentTheme: BackgroundTheme;
@@ -25,25 +31,41 @@ interface BackgroundThemeSelectorProps {
 }
 
 const themeOptions = [
-  { value: 'light' as const, label: 'Light & Clean', emoji: '☀️' },
-  { value: 'dark' as const, label: 'Dark & Mysterious', emoji: '🌙' },
-  { value: 'gradient' as const, label: 'Colorful Gradient', emoji: '🌈' },
-  { value: 'cosmic' as const, label: 'Cosmic Space', emoji: '🌌' },
-  { value: 'ocean' as const, label: 'Ocean Depths', emoji: '🌊' },
-  { value: 'sunset' as const, label: 'Warm Sunset', emoji: '🌅' },
+  { value: "light" as const, label: "Light & Clean", emoji: "☀️" },
+  { value: "dark" as const, label: "Dark & Mysterious", emoji: "🌙" },
+  { value: "gradient" as const, label: "Colorful Gradient", emoji: "🌈" },
+  { value: "cosmic" as const, label: "Cosmic Space", emoji: "🌌" },
+  { value: "ocean" as const, label: "Ocean Depths", emoji: "🌊" },
+  { value: "sunset" as const, label: "Warm Sunset", emoji: "🌅" },
 ];
 
 const intensityOptions = [
-  { value: 'minimal' as const, label: 'Minimal', description: 'Subtle effects' },
-  { value: 'moderate' as const, label: 'Moderate', description: 'Balanced visuals' },
-  { value: 'intense' as const, label: 'Intense', description: 'Rich animations' },
-  { value: 'maximum' as const, label: 'Maximum', description: 'Full experience' },
+  {
+    value: "minimal" as const,
+    label: "Minimal",
+    description: "Subtle effects",
+  },
+  {
+    value: "moderate" as const,
+    label: "Moderate",
+    description: "Balanced visuals",
+  },
+  {
+    value: "intense" as const,
+    label: "Intense",
+    description: "Rich animations",
+  },
+  {
+    value: "maximum" as const,
+    label: "Maximum",
+    description: "Full experience",
+  },
 ];
 
 const speedOptions = [
-  { value: 'slow' as const, label: 'Slow', description: 'Peaceful pace' },
-  { value: 'normal' as const, label: 'Normal', description: 'Default speed' },
-  { value: 'fast' as const, label: 'Fast', description: 'Energetic' },
+  { value: "slow" as const, label: "Slow", description: "Peaceful pace" },
+  { value: "normal" as const, label: "Normal", description: "Default speed" },
+  { value: "fast" as const, label: "Fast", description: "Energetic" },
 ];
 
 export function BackgroundThemeSelector({
@@ -56,7 +78,9 @@ export function BackgroundThemeSelector({
 }: BackgroundThemeSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentThemeOption = themeOptions.find(option => option.value === currentTheme);
+  const currentThemeOption = themeOptions.find(
+    (option) => option.value === currentTheme,
+  );
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -70,14 +94,14 @@ export function BackgroundThemeSelector({
           <span className="hidden sm:inline text-sm">
             {currentThemeOption?.emoji} {currentThemeOption?.label}
           </span>
-          <span className="sm:hidden text-sm">
-            {currentThemeOption?.emoji}
-          </span>
+          <span className="sm:hidden text-sm">{currentThemeOption?.emoji}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <div className="p-2 border-b border-neutral-200">
-          <h3 className="text-sm font-medium text-neutral-700">Background Theme</h3>
+          <h3 className="text-sm font-medium text-neutral-700">
+            Background Theme
+          </h3>
         </div>
 
         {/* Theme Selection */}
@@ -116,7 +140,9 @@ export function BackgroundThemeSelector({
             >
               <div>
                 <div className="text-sm font-medium">{option.label}</div>
-                <div className="text-xs text-neutral-500">{option.description}</div>
+                <div className="text-xs text-neutral-500">
+                  {option.description}
+                </div>
               </div>
               {currentIntensity === option.value && (
                 <Check className="h-4 w-4 text-green-600" />
@@ -142,7 +168,9 @@ export function BackgroundThemeSelector({
             >
               <div>
                 <div className="text-sm font-medium">{option.label}</div>
-                <div className="text-xs text-neutral-500">{option.description}</div>
+                <div className="text-xs text-neutral-500">
+                  {option.description}
+                </div>
               </div>
               {currentSpeed === option.value && (
                 <Check className="h-4 w-4 text-green-600" />

@@ -1,15 +1,19 @@
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
-import type { Product, CartItem } from '@/contexts/CartContext';
+import { loadStripe, type Stripe } from "@stripe/stripe-js";
+import type { Product, CartItem } from "@/contexts/CartContext";
 
 // Stripe configuration
-const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51QgXFhAVD2VJ7sKJKkLXb8XvIm7eOAbWsaIIiLh2HtEZKCYlg6BYmlWZqWu6pGS9gGWRsQgeLzH3TW3xYFgQVfCg00W7p5JzqD';
+const STRIPE_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+  "pk_test_51QgXFhAVD2VJ7sKJKkLXb8XvIm7eOAbWsaIIiLh2HtEZKCYlg6BYmlWZqWu6pGS9gGWRsQgeLzH3TW3xYFgQVfCg00W7p5JzqD";
 
 // Production readiness check
-const isProduction = process.env.NODE_ENV === 'production';
-const isTestMode = STRIPE_PUBLISHABLE_KEY.includes('pk_test_');
+const isProduction = process.env.NODE_ENV === "production";
+const isTestMode = STRIPE_PUBLISHABLE_KEY.includes("pk_test_");
 
 if (isProduction && isTestMode) {
-  console.warn('⚠️  WARNING: Using Stripe test keys in production! Please update to live keys.');
+  console.warn(
+    "⚠️  WARNING: Using Stripe test keys in production! Please update to live keys.",
+  );
 }
 
 let stripePromise: Promise<Stripe | null>;
@@ -73,19 +77,20 @@ interface ProcessedStripeOrder {
 }
 
 class StripeService {
-  private baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://same-gbaeolh4sfm-latest.netlify.app'
-    : 'http://localhost:3000';
+  private baseUrl =
+    process.env.NODE_ENV === "production"
+      ? "https://same-gbaeolh4sfm-latest.netlify.app"
+      : "http://localhost:3000";
 
   // Create checkout session
   async createCheckoutSession(
     cartItems: CartItem[],
-    customerInfo: { email: string; name: string; userId?: string }
+    customerInfo: { email: string; name: string; userId?: string },
   ): Promise<StripeCheckoutSession> {
     try {
-      const lineItems = cartItems.map(item => ({
+      const lineItems = cartItems.map((item) => ({
         price_data: {
-          currency: 'usd',
+          currency: "usd",
           product_data: {
             name: item.name,
             description: item.description,
@@ -93,50 +98,53 @@ class StripeService {
             metadata: {
               productId: item.id,
               category: item.category,
-              downloadUrl: item.downloadUrl || ''
-            }
+              downloadUrl: item.downloadUrl || "",
+            },
           },
           unit_amount: Math.round(item.price * 100), // Convert to cents
         },
         quantity: item.quantity,
       }));
 
-      const orderTotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const orderTotal = cartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
 
       // In a real implementation, this would call your backend API
       // For now, we'll simulate the response
       const mockSession: StripeCheckoutSession = {
         id: `cs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         url: `${this.baseUrl}/checkout/mock-stripe?session_id=cs_mock_${Date.now()}`,
-        payment_status: 'unpaid',
+        payment_status: "unpaid",
         amount_total: Math.round(orderTotal * 100),
-        currency: 'usd',
-        customer_email: customerInfo.email
+        currency: "usd",
+        customer_email: customerInfo.email,
       };
 
       // Store session data locally for demo purposes
       this.storeSessionData(mockSession.id, {
         cartItems,
         customerInfo,
-        orderTotal
+        orderTotal,
       });
 
       return mockSession;
     } catch (error) {
-      console.error('Error creating checkout session:', error);
-      throw new Error('Failed to create checkout session');
+      console.error("Error creating checkout session:", error);
+      throw new Error("Failed to create checkout session");
     }
   }
 
   // Create real Stripe checkout session (backend implementation)
   async createRealCheckoutSession(
     cartItems: CartItem[],
-    customerInfo: { email: string; name: string; userId?: string }
+    customerInfo: { email: string; name: string; userId?: string },
   ): Promise<StripeCheckoutSession> {
-    const response = await fetch('/api/create-checkout-session', {
-      method: 'POST',
+    const response = await fetch("/api/create-checkout-session", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         cartItems,
@@ -147,14 +155,16 @@ class StripeService {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create checkout session');
+      throw new Error("Failed to create checkout session");
     }
 
     return response.json();
   }
 
   // Retrieve checkout session
-  async retrieveSession(sessionId: string): Promise<StripeCheckoutSession | null> {
+  async retrieveSession(
+    sessionId: string,
+  ): Promise<StripeCheckoutSession | null> {
     try {
       // In production, call your backend API
       const response = await fetch(`/api/checkout-session/${sessionId}`);
@@ -163,7 +173,7 @@ class StripeService {
       }
       return response.json();
     } catch (error) {
-      console.error('Error retrieving session:', error);
+      console.error("Error retrieving session:", error);
       return null;
     }
   }
@@ -172,7 +182,7 @@ class StripeService {
   async handleSuccessfulPayment(sessionId: string) {
     const sessionData = this.getSessionData(sessionId);
     if (!sessionData) {
-      throw new Error('Session not found');
+      throw new Error("Session not found");
     }
 
     // Create order record
@@ -180,17 +190,17 @@ class StripeService {
       id: `order_${Date.now()}`,
       sessionId,
       customerId: sessionData.customerInfo?.userId,
-      customerEmail: sessionData.customerInfo?.email || '',
-      customerName: sessionData.customerInfo?.name || '',
+      customerEmail: sessionData.customerInfo?.email || "",
+      customerName: sessionData.customerInfo?.name || "",
       items: sessionData.cartItems || [],
       total: sessionData.orderTotal || 0,
-      status: 'completed',
+      status: "completed",
       createdAt: new Date().toISOString(),
-      downloadUrls: (sessionData.cartItems || []).map(item => ({
+      downloadUrls: (sessionData.cartItems || []).map((item) => ({
         productId: item.id,
         productName: item.name,
-        downloadUrl: item.downloadUrl || `/downloads/${item.id}.zip`
-      }))
+        downloadUrl: item.downloadUrl || `/downloads/${item.id}.zip`,
+      })),
     };
 
     // Store order (in production, save to database)
@@ -206,14 +216,14 @@ class StripeService {
   async attachPaymentMethod(customerId: string, paymentMethodId: string) {
     // In production, call Stripe API to attach payment method
     try {
-      const response = await fetch('/api/attach-payment-method', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId, paymentMethodId })
+      const response = await fetch("/api/attach-payment-method", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId, paymentMethodId }),
       });
       return response.json();
     } catch (error) {
-      console.error('Error attaching payment method:', error);
+      console.error("Error attaching payment method:", error);
       throw error;
     }
   }
@@ -221,14 +231,14 @@ class StripeService {
   // Subscription management for digital products
   async createSubscription(customerId: string, priceId: string) {
     try {
-      const response = await fetch('/api/create-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId, priceId })
+      const response = await fetch("/api/create-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId, priceId }),
       });
       return response.json();
     } catch (error) {
-      console.error('Error creating subscription:', error);
+      console.error("Error creating subscription:", error);
       throw error;
     }
   }
@@ -236,14 +246,14 @@ class StripeService {
   // Refund management
   async createRefund(chargeId: string, amount?: number) {
     try {
-      const response = await fetch('/api/create-refund', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chargeId, amount })
+      const response = await fetch("/api/create-refund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chargeId, amount }),
       });
       return response.json();
     } catch (error) {
-      console.error('Error creating refund:', error);
+      console.error("Error creating refund:", error);
       throw error;
     }
   }
@@ -251,10 +261,12 @@ class StripeService {
   // Analytics and reporting
   async getPaymentAnalytics(startDate: string, endDate: string) {
     try {
-      const response = await fetch(`/api/payment-analytics?start=${startDate}&end=${endDate}`);
+      const response = await fetch(
+        `/api/payment-analytics?start=${startDate}&end=${endDate}`,
+      );
       return response.json();
     } catch (error) {
-      console.error('Error fetching payment analytics:', error);
+      console.error("Error fetching payment analytics:", error);
       throw error;
     }
   }
@@ -270,14 +282,16 @@ class StripeService {
   }
 
   private storeOrder(order: ProcessedStripeOrder) {
-    const existingOrders = JSON.parse(localStorage.getItem('user_orders') || '[]');
+    const existingOrders = JSON.parse(
+      localStorage.getItem("user_orders") || "[]",
+    );
     existingOrders.push(order);
-    localStorage.setItem('user_orders', JSON.stringify(existingOrders));
+    localStorage.setItem("user_orders", JSON.stringify(existingOrders));
   }
 
   private async sendOrderConfirmation(order: ProcessedStripeOrder) {
     // Integrate with email service (SendGrid, Mailchimp, etc.)
-    console.log('Sending order confirmation email...', order);
+    console.log("Sending order confirmation email...", order);
   }
 }
 

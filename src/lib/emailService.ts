@@ -24,7 +24,7 @@ interface EmailResult {
 // SendGrid Provider
 class SendGridProvider implements EmailProvider {
   private apiKey: string;
-  private baseUrl = 'https://api.sendgrid.com/v3/mail/send';
+  private baseUrl = "https://api.sendgrid.com/v3/mail/send";
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -33,30 +33,38 @@ class SendGridProvider implements EmailProvider {
   async send(emailData: EmailData): Promise<EmailResult> {
     try {
       const response = await fetch(this.baseUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          personalizations: [{
-            to: [{ email: emailData.to }],
-            dynamic_template_data: emailData.templateData || {}
-          }],
-          from: { email: emailData.from || process.env.EMAIL_FROM || 'noreply@diginest.io' },
+          personalizations: [
+            {
+              to: [{ email: emailData.to }],
+              dynamic_template_data: emailData.templateData || {},
+            },
+          ],
+          from: {
+            email:
+              emailData.from || process.env.EMAIL_FROM || "noreply@diginest.io",
+          },
           subject: emailData.subject,
           content: [
             {
-              type: 'text/html',
-              value: emailData.html
-            }
+              type: "text/html",
+              value: emailData.html,
+            },
           ],
-          template_id: emailData.templateId
-        })
+          template_id: emailData.templateId,
+        }),
       });
 
       if (response.ok) {
-        return { success: true, messageId: response.headers.get('x-message-id') || 'sent' };
+        return {
+          success: true,
+          messageId: response.headers.get("x-message-id") || "sent",
+        };
       }
       const error = await response.text();
       return { success: false, error: `SendGrid error: ${error}` };
@@ -69,7 +77,7 @@ class SendGridProvider implements EmailProvider {
 // Resend Provider
 class ResendProvider implements EmailProvider {
   private apiKey: string;
-  private baseUrl = 'https://api.resend.com/emails';
+  private baseUrl = "https://api.resend.com/emails";
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -78,18 +86,21 @@ class ResendProvider implements EmailProvider {
   async send(emailData: EmailData): Promise<EmailResult> {
     try {
       const response = await fetch(this.baseUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: emailData.from || process.env.EMAIL_FROM || 'DigiNest <noreply@diginest.io>',
+          from:
+            emailData.from ||
+            process.env.EMAIL_FROM ||
+            "DigiNest <noreply@diginest.io>",
           to: [emailData.to],
           subject: emailData.subject,
           html: emailData.html,
-          text: emailData.text
-        })
+          text: emailData.text,
+        }),
       });
 
       if (response.ok) {
@@ -119,18 +130,23 @@ class MailgunProvider implements EmailProvider {
   async send(emailData: EmailData): Promise<EmailResult> {
     try {
       const formData = new FormData();
-      formData.append('from', emailData.from || process.env.EMAIL_FROM || 'DigiNest <noreply@diginest.io>');
-      formData.append('to', emailData.to);
-      formData.append('subject', emailData.subject);
-      formData.append('html', emailData.html);
-      if (emailData.text) formData.append('text', emailData.text);
+      formData.append(
+        "from",
+        emailData.from ||
+          process.env.EMAIL_FROM ||
+          "DigiNest <noreply@diginest.io>",
+      );
+      formData.append("to", emailData.to);
+      formData.append("subject", emailData.subject);
+      formData.append("html", emailData.html);
+      if (emailData.text) formData.append("text", emailData.text);
 
       const response = await fetch(this.baseUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Basic ${Buffer.from(`api:${this.apiKey}`).toString('base64')}`,
+          Authorization: `Basic ${Buffer.from(`api:${this.apiKey}`).toString("base64")}`,
         },
-        body: formData
+        body: formData,
       });
 
       if (response.ok) {
@@ -148,7 +164,7 @@ class MailgunProvider implements EmailProvider {
 // Email Templates
 export const emailTemplates = {
   welcome: {
-    subject: 'Welcome to DigiNest.io! 🎉',
+    subject: "Welcome to DigiNest.io! 🎉",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px; text-align: center;">
@@ -190,11 +206,11 @@ export const emailTemplates = {
           </p>
         </div>
       </div>
-    `
+    `,
   },
 
   orderConfirmation: {
-    subject: 'Order Confirmation - {{order_id}}',
+    subject: "Order Confirmation - {{order_id}}",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px; text-align: center;">
@@ -235,14 +251,14 @@ export const emailTemplates = {
           </p>
         </div>
       </div>
-    `
+    `,
   },
 
   // Abandoned cart email template - simplified for production stability
   abandonedCart: {
-    subject: 'You left something in your cart 🛒',
-    html: '<h1>Complete your purchase</h1><p>You have items waiting in your cart. Complete your purchase today!</p>'
-  }
+    subject: "You left something in your cart 🛒",
+    html: "<h1>Complete your purchase</h1><p>You have items waiting in your cart. Complete your purchase today!</p>",
+  },
 };
 
 // Main Email Service
@@ -256,24 +272,33 @@ class EmailService {
     } else if (process.env.RESEND_API_KEY) {
       this.provider = new ResendProvider(process.env.RESEND_API_KEY);
     } else if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
-      this.provider = new MailgunProvider(process.env.MAILGUN_API_KEY, process.env.MAILGUN_DOMAIN);
+      this.provider = new MailgunProvider(
+        process.env.MAILGUN_API_KEY,
+        process.env.MAILGUN_DOMAIN,
+      );
     } else {
       // Fallback to console logging in development
       this.provider = new ConsoleProvider();
     }
   }
 
-  async sendWelcomeEmail(userEmail: string, userName: string): Promise<EmailResult> {
+  async sendWelcomeEmail(
+    userEmail: string,
+    userName: string,
+  ): Promise<EmailResult> {
     const template = emailTemplates.welcome;
     const html = template.html
       .replace(/\{\{user_name\}\}/g, userName)
-      .replace(/\{\{site_url\}\}/g, process.env.NEXT_PUBLIC_SITE_URL || 'https://diginest.io');
+      .replace(
+        /\{\{site_url\}\}/g,
+        process.env.NEXT_PUBLIC_SITE_URL || "https://diginest.io",
+      );
 
     return this.provider.send({
       to: userEmail,
       subject: template.subject,
       html,
-      text: `Welcome to DigiNest.io! Thank you for joining our community, ${userName}.`
+      text: `Welcome to DigiNest.io! Thank you for joining our community, ${userName}.`,
     });
   }
 
@@ -284,13 +309,16 @@ class EmailService {
       orderDate: string;
       orderTotal: string;
       paymentMethod: string;
-      downloadLinks: Array<{productName: string; downloadUrl: string}>;
-    }
+      downloadLinks: Array<{ productName: string; downloadUrl: string }>;
+    },
   ): Promise<EmailResult> {
     const template = emailTemplates.orderConfirmation;
     const downloadLinksHtml = orderData.downloadLinks
-      .map(link => `<p><a href="${link.downloadUrl}" style="color: #1d4ed8;">${link.productName}</a></p>`)
-      .join('');
+      .map(
+        (link) =>
+          `<p><a href="${link.downloadUrl}" style="color: #1d4ed8;">${link.productName}</a></p>`,
+      )
+      .join("");
 
     const html = template.html
       .replace(/\{\{order_id\}\}/g, orderData.orderId)
@@ -298,13 +326,16 @@ class EmailService {
       .replace(/\{\{order_total\}\}/g, orderData.orderTotal)
       .replace(/\{\{payment_method\}\}/g, orderData.paymentMethod)
       .replace(/\{\{download_links\}\}/g, downloadLinksHtml)
-      .replace(/\{\{site_url\}\}/g, process.env.NEXT_PUBLIC_SITE_URL || 'https://diginest.io');
+      .replace(
+        /\{\{site_url\}\}/g,
+        process.env.NEXT_PUBLIC_SITE_URL || "https://diginest.io",
+      );
 
     return this.provider.send({
       to: userEmail,
       subject: template.subject.replace(/\{\{order_id\}\}/g, orderData.orderId),
       html,
-      text: `Order ${orderData.orderId} confirmed. Total: ${orderData.orderTotal}. Download your products from your account.`
+      text: `Order ${orderData.orderId} confirmed. Total: ${orderData.orderTotal}. Download your products from your account.`,
     });
   }
 
@@ -312,8 +343,8 @@ class EmailService {
     userEmail: string,
     cartData: {
       cartTotal: string;
-      cartItems: Array<{name: string; price: string}>;
-    }
+      cartItems: Array<{ name: string; price: string }>;
+    },
   ): Promise<EmailResult> {
     const template = emailTemplates.abandonedCart;
     const html = `${template.html}<p>Cart total: ${cartData.cartTotal}</p>`;
@@ -322,7 +353,7 @@ class EmailService {
       to: userEmail,
       subject: template.subject,
       html,
-      text: `You left items in your cart worth ${cartData.cartTotal}. Complete your purchase at DigiNest.io`
+      text: `You left items in your cart worth ${cartData.cartTotal}. Complete your purchase at DigiNest.io`,
     });
   }
 }
@@ -330,10 +361,10 @@ class EmailService {
 // Console Provider for Development
 class ConsoleProvider implements EmailProvider {
   async send(emailData: EmailData): Promise<EmailResult> {
-    console.log('📧 EMAIL WOULD BE SENT:');
-    console.log('To:', emailData.to);
-    console.log('Subject:', emailData.subject);
-    console.log('HTML Preview:', `${emailData.html.substring(0, 200)}...`);
+    console.log("📧 EMAIL WOULD BE SENT:");
+    console.log("To:", emailData.to);
+    console.log("Subject:", emailData.subject);
+    console.log("HTML Preview:", `${emailData.html.substring(0, 200)}...`);
     return { success: true, messageId: `console-${Date.now()}` };
   }
 }

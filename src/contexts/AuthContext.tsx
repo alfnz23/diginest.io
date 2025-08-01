@@ -1,8 +1,9 @@
 "use client";
 
-import type React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
-import { triggerWelcomeSeries } from '@/lib/emailAutomation';
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { safeLocalStorage } from "@/lib/browser-utils";
+import { triggerWelcomeSeries } from "@/lib/emailAutomation";
 
 export interface User {
   id: string;
@@ -32,20 +33,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Mock users for demonstration
 const mockUsers: User[] = [
   {
-    id: '1',
-    email: 'admin@diginest.io',
-    name: 'Admin User',
+    id: "1",
+    email: "admin@diginest.io",
+    name: "Admin User",
     isAdmin: true,
     purchases: [],
-    joinedAt: '2024-01-01',
+    joinedAt: "2024-01-01",
   },
   {
-    id: '2',
-    email: 'customer@example.com',
-    name: 'John Doe',
+    id: "2",
+    email: "customer@example.com",
+    name: "John Doe",
     isAdmin: false,
-    purchases: ['product-1', 'product-2'],
-    joinedAt: '2024-02-15',
+    purchases: ["product-1", "product-2"],
+    joinedAt: "2024-02-15",
   },
 ];
 
@@ -59,10 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Load user from localStorage on mount
   useEffect(() => {
     // Only run on client side
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     try {
-      const savedUser = localStorage.getItem('diginest-user');
+      const savedUser = safeLocalStorage.getItem("diginest-user");
       if (savedUser) {
         const user = JSON.parse(savedUser);
         setState({
@@ -71,34 +72,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
         });
       } else {
-        setState(prev => ({ ...prev, isLoading: false }));
+        setState((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
-      console.error('Failed to load user from localStorage:', error);
+      console.error("Failed to load user from localStorage:", error);
       // Clear corrupted data
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('diginest-user');
+      if (typeof window !== "undefined") {
+        safeLocalStorage.removeItem("diginest-user");
       }
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      setState(prev => ({ ...prev, isLoading: true }));
+      setState((prev) => ({ ...prev, isLoading: true }));
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Check credentials against mock users
-      const user = mockUsers.find(u => u.email === email);
+      const user = mockUsers.find((u) => u.email === email);
 
-      if (user && (password === 'password123' || password === 'admin123')) {
+      if (user && (password === "password123" || password === "admin123")) {
         const loggedInUser = { ...user };
 
         // Save to localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('diginest-user', JSON.stringify(loggedInUser));
+        if (typeof window !== "undefined") {
+          safeLocalStorage.setItem(
+            "diginest-user",
+            JSON.stringify(loggedInUser),
+          );
         }
 
         setState({
@@ -110,26 +114,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
 
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState((prev) => ({ ...prev, isLoading: false }));
       return false;
     } catch (error) {
-      console.error('Login error:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      console.error("Login error:", error);
+      setState((prev) => ({ ...prev, isLoading: false }));
       return false;
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string,
+  ): Promise<boolean> => {
     try {
-      setState(prev => ({ ...prev, isLoading: true }));
+      setState((prev) => ({ ...prev, isLoading: true }));
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Check if user already exists
-      const existingUser = mockUsers.find(u => u.email === email);
+      const existingUser = mockUsers.find((u) => u.email === email);
       if (existingUser) {
-        setState(prev => ({ ...prev, isLoading: false }));
+        setState((prev) => ({ ...prev, isLoading: false }));
         return false;
       }
 
@@ -147,8 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mockUsers.push(newUser);
 
       // Save to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('diginest-user', JSON.stringify(newUser));
+      if (typeof window !== "undefined") {
+        safeLocalStorage.setItem("diginest-user", JSON.stringify(newUser));
       }
 
       setState({
@@ -161,22 +169,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         triggerWelcomeSeries(newUser);
       } catch (emailError) {
-        console.warn('Email automation error:', emailError);
+        console.warn("Email automation error:", emailError);
         // Don't fail registration due to email issues
       }
 
       return true;
     } catch (error) {
-      console.error('Registration error:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      console.error("Registration error:", error);
+      setState((prev) => ({ ...prev, isLoading: false }));
       return false;
     }
   };
 
   const logout = () => {
     try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('diginest-user');
+      if (typeof window !== "undefined") {
+        safeLocalStorage.removeItem("diginest-user");
       }
       setState({
         user: null,
@@ -184,17 +192,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: false,
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (state.user) {
       const updatedUser = { ...state.user, ...userData };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('diginest-user', JSON.stringify(updatedUser));
+      if (typeof window !== "undefined") {
+        safeLocalStorage.setItem("diginest-user", JSON.stringify(updatedUser));
       }
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         user: updatedUser,
       }));
@@ -219,7 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

@@ -1,5 +1,5 @@
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
-import type { CartItem } from '@/contexts/CartContext';
+import { loadStripe, type Stripe } from "@stripe/stripe-js";
+import type { CartItem } from "@/contexts/CartContext";
 
 // Initialize Stripe
 let stripePromise: Promise<Stripe | null>;
@@ -7,7 +7,8 @@ let stripePromise: Promise<Stripe | null>;
 const getStripe = () => {
   if (!stripePromise) {
     stripePromise = loadStripe(
-      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51234567890abcdefghijklmnopqrstuvwxyz'
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+        "pk_test_51234567890abcdefghijklmnopqrstuvwxyz",
     );
   }
   return stripePromise;
@@ -18,7 +19,7 @@ export interface PaymentSession {
   url: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'processing' | 'succeeded' | 'failed';
+  status: "pending" | "processing" | "succeeded" | "failed";
 }
 
 export interface CheckoutSessionData {
@@ -31,24 +32,29 @@ export interface CheckoutSessionData {
 
 // Mock Stripe backend functions - in production, these would be API routes
 class StripeService {
-
   // Create checkout session (normally done on backend)
-  async createCheckoutSession(data: CheckoutSessionData): Promise<PaymentSession> {
+  async createCheckoutSession(
+    data: CheckoutSessionData,
+  ): Promise<PaymentSession> {
     // In production, this would call your backend API
     // which would use the Stripe server-side SDK
 
-    console.log('Creating Stripe checkout session:', data);
+    console.log("Creating Stripe checkout session:", data);
 
     // Simulate API call to create session
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Mock session response
     const mockSession: PaymentSession = {
       sessionId: `cs_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       url: `https://checkout.stripe.com/pay/cs_test_${Date.now()}#fidkdWxOYHwnPyd1blpxYHZxWjA0TnVAdXVdbUduS0F9bkdpN09dXUFvTjFxS1JLUUp%2FSnJiU0NAU0glaFRFaHNJXHZJcnJCTWhGQUJOVW5ybUB9QUw%2Fb2pCVTJuSGJgdnZuZkR8QnVWNjNzTjFNT0dfMGdJbnE%3D`,
-      amount: data.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 100, // Stripe uses cents
-      currency: 'usd',
-      status: 'pending'
+      amount:
+        data.cartItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        ) * 100, // Stripe uses cents
+      currency: "usd",
+      status: "pending",
     };
 
     return mockSession;
@@ -58,7 +64,7 @@ class StripeService {
   async redirectToCheckout(sessionId: string) {
     const stripe = await getStripe();
     if (!stripe) {
-      throw new Error('Stripe failed to load');
+      throw new Error("Stripe failed to load");
     }
 
     // In a real implementation, you'd redirect to Stripe
@@ -66,7 +72,7 @@ class StripeService {
 
     // For demo purposes, simulate successful payment after delay
     setTimeout(() => {
-      window.location.href = '/checkout/success';
+      window.location.href = "/checkout/success";
     }, 2000);
   }
 
@@ -82,31 +88,30 @@ class StripeService {
 
     return {
       success: true,
-      message: 'Payment processed successfully!',
-      downloadLinks: [
-        '/downloads/product1.zip',
-        '/downloads/product2.pdf'
-      ]
+      message: "Payment processed successfully!",
+      downloadLinks: ["/downloads/product1.zip", "/downloads/product2.pdf"],
     };
   }
 
   // Get payment status
-  async getPaymentStatus(sessionId: string): Promise<PaymentSession['status']> {
+  async getPaymentStatus(sessionId: string): Promise<PaymentSession["status"]> {
     // In production, query Stripe API
     console.log(`Checking payment status for: ${sessionId}`);
-    return 'succeeded';
+    return "succeeded";
   }
 
   // Process refund
   async processRefund(paymentIntentId: string, amount?: number) {
-    console.log(`Processing refund for: ${paymentIntentId}, amount: ${amount || 'full'}`);
+    console.log(
+      `Processing refund for: ${paymentIntentId}, amount: ${amount || "full"}`,
+    );
 
     // In production, use Stripe refund API
     return {
       success: true,
       refundId: `re_${Date.now()}`,
       amount: amount || 0,
-      status: 'succeeded'
+      status: "succeeded",
     };
   }
 }
@@ -115,18 +120,20 @@ export const stripeService = new StripeService();
 
 // PayPal integration mock
 class PayPalService {
-
   async createOrder(data: CheckoutSessionData) {
-    console.log('Creating PayPal order:', data);
+    console.log("Creating PayPal order:", data);
 
     // Simulate PayPal SDK
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     return {
       orderId: `PAYPAL_${Date.now()}`,
       approvalUrl: `https://www.sandbox.paypal.com/checkoutnow?token=EC-${Date.now()}`,
-      amount: data.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-      currency: 'USD'
+      amount: data.cartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      ),
+      currency: "USD",
     };
   }
 
@@ -136,7 +143,7 @@ class PayPalService {
     return {
       success: true,
       captureId: `CAP_${Date.now()}`,
-      status: 'COMPLETED'
+      status: "COMPLETED",
     };
   }
 }
@@ -144,9 +151,9 @@ class PayPalService {
 export const paypalService = new PayPalService();
 
 // Utility functions
-export const formatPrice = (amount: number, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
+export const formatPrice = (amount: number, currency = "USD") => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency,
   }).format(amount);
 };

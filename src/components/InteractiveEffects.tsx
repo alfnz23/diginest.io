@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
-import { motion } from 'framer-motion';
-import * as THREE from 'three';
+import { useRef, useState, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Points, PointMaterial } from "@react-three/drei";
+import { motion } from "framer-motion";
+import * as THREE from "three";
 
 interface ParticleFieldProps {
   count: number;
@@ -32,8 +32,14 @@ function ParticleField({ count, mousePosition }: ParticleFieldProps) {
   useFrame((state) => {
     if (!pointsRef.current) return;
 
-    const mouseX = typeof window !== 'undefined' ? (mousePosition.x / window.innerWidth) * 2 - 1 : 0;
-    const mouseY = typeof window !== 'undefined' ? -(mousePosition.y / window.innerHeight) * 2 + 1 : 0;
+    const mouseX =
+      typeof window !== "undefined"
+        ? (mousePosition.x / window.innerWidth) * 2 - 1
+        : 0;
+    const mouseY =
+      typeof window !== "undefined"
+        ? -(mousePosition.y / window.innerHeight) * 2 + 1
+        : 0;
 
     // Update particle positions
     for (let i = 0; i < count * 3; i += 3) {
@@ -60,8 +66,8 @@ function ParticleField({ count, mousePosition }: ParticleFieldProps) {
     }
 
     pointsRef.current.geometry.setAttribute(
-      'position',
-      new THREE.BufferAttribute(positions.current, 3)
+      "position",
+      new THREE.BufferAttribute(positions.current, 3),
     );
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
   });
@@ -84,16 +90,18 @@ interface CursorTrailProps {
 }
 
 export function CursorTrail({ mousePosition }: CursorTrailProps) {
-  const [trail, setTrail] = useState<Array<{ x: number; y: number; id: number }>>([]);
+  const [trail, setTrail] = useState<
+    Array<{ x: number; y: number; id: number }>
+  >([]);
 
   useEffect(() => {
     const trailPoint = {
       x: mousePosition.x,
       y: mousePosition.y,
-      id: Date.now()
+      id: Date.now(),
     };
 
-    setTrail(prev => {
+    setTrail((prev) => {
       const newTrail = [trailPoint, ...prev.slice(0, 19)]; // Keep only last 20 points
       return newTrail;
     });
@@ -155,8 +163,8 @@ export function HoverEffect({ children, className = "" }: HoverEffectProps) {
       }}
       whileTap={{ scale: 0.95 }}
       style={{
-        transformStyle: 'preserve-3d',
-        transformOrigin: 'center center'
+        transformStyle: "preserve-3d",
+        transformOrigin: "center center",
       }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >

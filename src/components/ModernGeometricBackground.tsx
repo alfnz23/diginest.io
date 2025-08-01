@@ -1,19 +1,24 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface ModernGeometricBackgroundProps {
-  variant?: 'minimal' | 'elegant' | 'dynamic';
+  variant?: "minimal" | "elegant" | "dynamic";
 }
 
-export function ModernGeometricBackground({ variant = 'elegant' }: ModernGeometricBackgroundProps) {
+export function ModernGeometricBackground({
+  variant = "elegant",
+}: ModernGeometricBackgroundProps) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     // Hide on mobile for better performance
-    if (typeof navigator !== 'undefined') {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (typeof navigator !== "undefined") {
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
       setIsVisible(!isMobile);
     }
   }, []);
@@ -25,9 +30,9 @@ export function ModernGeometricBackground({ variant = 'elegant' }: ModernGeometr
       {/* Base gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50/30" />
 
-      {variant === 'minimal' && <MinimalPattern />}
-      {variant === 'elegant' && <ElegantPattern />}
-      {variant === 'dynamic' && <DynamicPattern />}
+      {variant === "minimal" && <MinimalPattern />}
+      {variant === "elegant" && <ElegantPattern />}
+      {variant === "dynamic" && <DynamicPattern />}
     </div>
   );
 }
@@ -36,10 +41,24 @@ function MinimalPattern() {
   return (
     <>
       {/* Simple geometric lines */}
-      <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 w-full h-full"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgb(148 163 184)" strokeWidth="0.5" opacity="0.1"/>
+          <pattern
+            id="grid"
+            width="60"
+            height="60"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 60 0 L 0 0 0 60"
+              fill="none"
+              stroke="rgb(148 163 184)"
+              strokeWidth="0.5"
+              opacity="0.1"
+            />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
@@ -61,8 +80,16 @@ function MinimalPattern() {
             scale: [1, 1.05, 1],
           }}
           transition={{
-            rotate: { duration: 30 + i * 10, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
-            scale: { duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
+            rotate: {
+              duration: 30 + i * 10,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            },
+            scale: {
+              duration: 8,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut",
+            },
           }}
         />
       ))}
@@ -74,35 +101,64 @@ function ElegantPattern() {
   return (
     <>
       {/* Dot pattern */}
-      <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 w-full h-full opacity-30"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="20" cy="20" r="1" fill="rgb(148 163 184)" opacity="0.3"/>
+          <pattern
+            id="dots"
+            x="0"
+            y="0"
+            width="40"
+            height="40"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle
+              cx="20"
+              cy="20"
+              r="1"
+              fill="rgb(148 163 184)"
+              opacity="0.3"
+            />
           </pattern>
         </defs>
-        <rect x="0" y="0" width="100%" height="100%" fill="url(#dots)"/>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#dots)" />
       </svg>
 
       {/* Large geometric shapes */}
       <motion.div
         className="absolute top-20 right-20 w-80 h-80 rounded-full border border-blue-100/50"
         animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+        transition={{
+          duration: 60,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "linear",
+        }}
       />
 
       <motion.div
         className="absolute bottom-20 left-20 w-60 h-60 rounded-lg border border-purple-100/50 rotate-45"
         animate={{ rotate: [45, 135, 45] }}
-        transition={{ duration: 40, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        transition={{
+          duration: 40,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "easeInOut",
+        }}
       />
 
       <motion.div
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96"
         style={{
-          background: 'conic-gradient(from 0deg, transparent, rgba(59, 130, 246, 0.03), transparent)',
+          background:
+            "conic-gradient(from 0deg, transparent, rgba(59, 130, 246, 0.03), transparent)",
         }}
         animate={{ rotate: 360 }}
-        transition={{ duration: 80, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+        transition={{
+          duration: 80,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "linear",
+        }}
       />
 
       {/* Floating triangles */}
@@ -115,9 +171,9 @@ function ElegantPattern() {
             top: `${20 + (i % 2) * 50}%`,
             width: 0,
             height: 0,
-            borderLeft: '15px solid transparent',
-            borderRight: '15px solid transparent',
-            borderBottom: '25px solid rgb(148 163 184)',
+            borderLeft: "15px solid transparent",
+            borderRight: "15px solid transparent",
+            borderBottom: "25px solid rgb(148 163 184)",
             opacity: 0.1,
           }}
           animate={{
@@ -145,9 +201,19 @@ function DynamicPattern() {
   return (
     <>
       {/* Hexagonal pattern */}
-      <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="absolute inset-0 w-full h-full opacity-20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
-          <pattern id="hexagons" x="0" y="0" width="100" height="86.6" patternUnits="userSpaceOnUse">
+          <pattern
+            id="hexagons"
+            x="0"
+            y="0"
+            width="100"
+            height="86.6"
+            patternUnits="userSpaceOnUse"
+          >
             <polygon
               points="50,0 93.3,25 93.3,75 50,100 6.7,75 6.7,25"
               fill="none"

@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,10 +29,24 @@ interface Review {
 // Generate static params for all products
 export async function generateStaticParams() {
   const productIds = [
-    "product-1", "product-2", "product-3", "product-4", "product-5",
-    "product-6", "product-7", "product-8", "product-9", "product-10",
-    "product-11", "product-12", "product-13", "product-14", "product-15",
-    "product-16", "product-17", "product-18"
+    "product-1",
+    "product-2",
+    "product-3",
+    "product-4",
+    "product-5",
+    "product-6",
+    "product-7",
+    "product-8",
+    "product-9",
+    "product-10",
+    "product-11",
+    "product-12",
+    "product-13",
+    "product-14",
+    "product-15",
+    "product-16",
+    "product-17",
+    "product-18",
   ];
 
   return productIds.map((id) => ({
@@ -47,13 +67,14 @@ const mockProducts: Record<string, DetailedProduct> = {
   "product-1": {
     id: "product-1",
     name: "Minimalist Digital Planner",
-    description: "Transform your productivity with our bestselling digital planner. Designed for iPad and tablet users who value clean, minimal aesthetics without compromising functionality.",
+    description:
+      "Transform your productivity with our bestselling digital planner. Designed for iPad and tablet users who value clean, minimal aesthetics without compromising functionality.",
     price: 29.99,
     image: "https://ugc.same-assets.com/bTHIWwJOBZ8ti0Zl7ZVoJy98XTtb4Xa5.jpeg",
     images: [
       "https://ugc.same-assets.com/bTHIWwJOBZ8ti0Zl7ZVoJy98XTtb4Xa5.jpeg",
       "https://ugc.same-assets.com/DJAgD61a-4T_nzFwTL1ekGXObpjr-hMN.jpeg",
-      "https://ugc.same-assets.com/uKeNqI3BUtEuxLBlJil5clZF6zGjAJqR.jpeg"
+      "https://ugc.same-assets.com/uKeNqI3BUtEuxLBlJil5clZF6zGjAJqR.jpeg",
     ],
     category: "planners",
     rating: 4.9,
@@ -64,13 +85,13 @@ const mockProducts: Record<string, DetailedProduct> = {
       "Habit tracker and goal setting pages",
       "Note-taking sections with dot grid",
       "Hyperlinked navigation for easy access",
-      "Compatible with GoodNotes, Notability, and more"
+      "Compatible with GoodNotes, Notability, and more",
     ],
     requirements: [
       "iPad with Apple Pencil support",
       "GoodNotes 5, Notability, or similar app",
       "iOS 12.0 or later",
-      "2GB free storage space"
+      "2GB free storage space",
     ],
     reviewsData: [
       {
@@ -79,8 +100,9 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "SC",
         rating: 5,
         date: "2024-01-15",
-        comment: "This planner completely transformed my productivity! The clean design helps me focus, and the hyperlinks make navigation seamless. Worth every penny!",
-        verified: true
+        comment:
+          "This planner completely transformed my productivity! The clean design helps me focus, and the hyperlinks make navigation seamless. Worth every penny!",
+        verified: true,
       },
       {
         id: 2,
@@ -88,8 +110,9 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "MR",
         rating: 5,
         date: "2024-01-10",
-        comment: "I've tried many digital planners, but this one stands out. The minimalist design is perfect for my workflow, and the quality is exceptional.",
-        verified: true
+        comment:
+          "I've tried many digital planners, but this one stands out. The minimalist design is perfect for my workflow, and the quality is exceptional.",
+        verified: true,
       },
       {
         id: 3,
@@ -97,21 +120,23 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "ET",
         rating: 4,
         date: "2024-01-08",
-        comment: "Great planner with excellent layout. Only wish it had more color options, but the functionality is top-notch!",
-        verified: false
-      }
-    ]
+        comment:
+          "Great planner with excellent layout. Only wish it had more color options, but the functionality is top-notch!",
+        verified: false,
+      },
+    ],
   },
   "product-9": {
     id: "product-9",
     name: "Ultimate Calorie Tracking Spreadsheet",
-    description: "Take control of your nutrition with our comprehensive calorie and macro tracking spreadsheet. Perfect for anyone serious about their health goals, weight management, or athletic performance.",
+    description:
+      "Take control of your nutrition with our comprehensive calorie and macro tracking spreadsheet. Perfect for anyone serious about their health goals, weight management, or athletic performance.",
     price: 22.99,
     image: "https://ugc.same-assets.com/il21uiaNPQItlsYi3EMwn-IfAbiCorr2.jpeg",
     images: [
       "https://ugc.same-assets.com/il21uiaNPQItlsYi3EMwn-IfAbiCorr2.jpeg",
       "https://ugc.same-assets.com/GgfoFD3lPd0Uy7kyEhDWkGZ_WxLcvPmi.png",
-      "https://ugc.same-assets.com/7R58kiOcIUY2HNp2gX5gk7H5LgoUDepD.jpeg"
+      "https://ugc.same-assets.com/7R58kiOcIUY2HNp2gX5gk7H5LgoUDepD.jpeg",
     ],
     category: "health",
     rating: 4.7,
@@ -122,13 +147,13 @@ const mockProducts: Record<string, DetailedProduct> = {
       "Meal planning templates with automated calculations",
       "Progress tracking with weight and body composition",
       "Custom goal setting for cutting, bulking, or maintenance",
-      "Compatible with Excel, Google Sheets, and Numbers"
+      "Compatible with Excel, Google Sheets, and Numbers",
     ],
     requirements: [
       "Microsoft Excel 2016 or later / Google Sheets",
       "Basic spreadsheet knowledge recommended",
       "Internet connection for cloud syncing (Google Sheets)",
-      "50MB free storage space"
+      "50MB free storage space",
     ],
     reviewsData: [
       {
@@ -137,8 +162,9 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "JP",
         rating: 5,
         date: "2024-01-20",
-        comment: "This tracker helped me lose 15 pounds! The meal planning feature is a game-changer. So much better than expensive apps.",
-        verified: true
+        comment:
+          "This tracker helped me lose 15 pounds! The meal planning feature is a game-changer. So much better than expensive apps.",
+        verified: true,
       },
       {
         id: 2,
@@ -146,8 +172,9 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "DK",
         rating: 5,
         date: "2024-01-18",
-        comment: "As a personal trainer, I recommend this to all my clients. The macro breakdown is incredibly detailed and accurate.",
-        verified: true
+        comment:
+          "As a personal trainer, I recommend this to all my clients. The macro breakdown is incredibly detailed and accurate.",
+        verified: true,
       },
       {
         id: 3,
@@ -155,21 +182,23 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "MS",
         rating: 4,
         date: "2024-01-12",
-        comment: "Great spreadsheet with tons of features. Took me a day to set up everything but now it's perfect for my needs.",
-        verified: true
-      }
-    ]
+        comment:
+          "Great spreadsheet with tons of features. Took me a day to set up everything but now it's perfect for my needs.",
+        verified: true,
+      },
+    ],
   },
   "product-10": {
     id: "product-10",
     name: "12-Week Strength Training Program",
-    description: "Build serious strength with our scientifically-designed 12-week progressive training program. Suitable for intermediate to advanced lifters looking to break through plateaus.",
+    description:
+      "Build serious strength with our scientifically-designed 12-week progressive training program. Suitable for intermediate to advanced lifters looking to break through plateaus.",
     price: 34.99,
     image: "https://ugc.same-assets.com/8QM59VVMWstqjmqYUFFIGf07POvDew1_.png",
     images: [
       "https://ugc.same-assets.com/8QM59VVMWstqjmqYUFFIGf07POvDew1_.png",
       "https://ugc.same-assets.com/VmX0KDVr1dQUnozVrzXHLzZBY-IUgONy.jpeg",
-      "https://ugc.same-assets.com/2H0CqkPAsVBawi7qVT4bTHAZ8Ij43CQI.jpeg"
+      "https://ugc.same-assets.com/2H0CqkPAsVBawi7qVT4bTHAZ8Ij43CQI.jpeg",
     ],
     category: "fitness",
     rating: 4.9,
@@ -180,13 +209,13 @@ const mockProducts: Record<string, DetailedProduct> = {
       "Progressive overload tracking system",
       "Warm-up and mobility routines included",
       "Nutrition guidelines for strength gains",
-      "Bonus: Deload week protocols"
+      "Bonus: Deload week protocols",
     ],
     requirements: [
       "Access to a gym with barbells and plates",
       "6+ months of lifting experience recommended",
       "Ability to perform basic compound movements",
-      "PDF reader app on your device"
+      "PDF reader app on your device",
     ],
     reviewsData: [
       {
@@ -195,8 +224,9 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "AJ",
         rating: 5,
         date: "2024-01-25",
-        comment: "Increased my squat by 40lbs in 12 weeks! The progression is perfect and the exercise selection is spot on.",
-        verified: true
+        comment:
+          "Increased my squat by 40lbs in 12 weeks! The progression is perfect and the exercise selection is spot on.",
+        verified: true,
       },
       {
         id: 2,
@@ -204,8 +234,9 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "RG",
         rating: 5,
         date: "2024-01-22",
-        comment: "Finally broke through my bench press plateau. This program is challenging but very well structured.",
-        verified: true
+        comment:
+          "Finally broke through my bench press plateau. This program is challenging but very well structured.",
+        verified: true,
       },
       {
         id: 3,
@@ -213,11 +244,12 @@ const mockProducts: Record<string, DetailedProduct> = {
         avatar: "TW",
         rating: 5,
         date: "2024-01-20",
-        comment: "Best investment I made for my training. The program is intense but the results speak for themselves.",
-        verified: true
-      }
-    ]
-  }
+        comment:
+          "Best investment I made for my training. The program is intense but the results speak for themselves.",
+        verified: true,
+      },
+    ],
+  },
 };
 
 // Related products
@@ -241,10 +273,12 @@ const relatedProducts: Product[] = [
     category: "planners",
     rating: 4.8,
     reviews: 156,
-  }
+  },
 ];
 
-export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProductDetailPage({
+  params,
+}: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const product = mockProducts[id];
 
@@ -252,7 +286,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-neutral-900 mb-4">Product Not Found</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 mb-4">
+            Product Not Found
+          </h1>
           <Link href="/products">
             <Button>Back to Products</Button>
           </Link>
@@ -260,8 +296,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
     );
   }
-
-
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -273,7 +307,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <Link href="/" className="text-2xl font-bold text-neutral-900">
                 DigiNest.io
               </Link>
-              <Link href="/products" className="flex items-center text-neutral-600 hover:text-neutral-900">
+              <Link
+                href="/products"
+                className="flex items-center text-neutral-600 hover:text-neutral-900"
+              >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to Products
               </Link>
@@ -310,7 +347,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="requirements">Requirements</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviewsData.length})</TabsTrigger>
+              <TabsTrigger value="reviews">
+                Reviews ({product.reviewsData.length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="details" className="mt-8">
@@ -321,7 +360,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <CardContent>
                   <ul className="space-y-3">
                     {product.features.map((feature, index) => (
-                      <li key={`feature-${index}-${feature.slice(0, 10)}`} className="flex items-start gap-3">
+                      <li
+                        key={`feature-${index}-${feature.slice(0, 10)}`}
+                        className="flex items-start gap-3"
+                      >
                         <div className="w-2 h-2 bg-neutral-900 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-neutral-700">{feature}</span>
                       </li>
@@ -335,12 +377,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <Card>
                 <CardHeader>
                   <CardTitle>System Requirements</CardTitle>
-                  <CardDescription>Make sure your device meets these requirements</CardDescription>
+                  <CardDescription>
+                    Make sure your device meets these requirements
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
                     {product.requirements.map((requirement, index) => (
-                      <li key={`requirement-${index}-${requirement.slice(0, 10)}`} className="flex items-start gap-3">
+                      <li
+                        key={`requirement-${index}-${requirement.slice(0, 10)}`}
+                        className="flex items-start gap-3"
+                      >
                         <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-neutral-700">{requirement}</span>
                       </li>
@@ -363,7 +410,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium">{review.name}</span>
                             {review.verified && (
-                              <Badge variant="outline" className="text-green-600 border-green-600">
+                              <Badge
+                                variant="outline"
+                                className="text-green-600 border-green-600"
+                              >
                                 Verified Purchase
                               </Badge>
                             )}
@@ -375,13 +425,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                                   key={`review-star-${review.id}-${i}`}
                                   className={`h-4 w-4 ${
                                     i < review.rating
-                                      ? 'fill-yellow-400 text-yellow-400'
-                                      : 'text-neutral-300'
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-neutral-300"
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-neutral-500">{review.date}</span>
+                            <span className="text-sm text-neutral-500">
+                              {review.date}
+                            </span>
                           </div>
                           <p className="text-neutral-700">{review.comment}</p>
                         </div>
@@ -396,10 +448,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         {/* Related Products */}
         <div className="mt-16">
-          <h2 className="text-2xl font-light text-neutral-900 mb-8">You Might Also Like</h2>
+          <h2 className="text-2xl font-light text-neutral-900 mb-8">
+            You Might Also Like
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {relatedProducts.map((relatedProduct) => (
-              <Card key={relatedProduct.id} className="group hover:shadow-lg transition-all duration-300">
+              <Card
+                key={relatedProduct.id}
+                className="group hover:shadow-lg transition-all duration-300"
+              >
                 <div className="aspect-square bg-gradient-to-br from-neutral-100 to-neutral-200 relative overflow-hidden">
                   <img
                     src={relatedProduct.image}
@@ -408,8 +465,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   />
                 </div>
                 <CardHeader>
-                  <CardTitle className="text-lg font-medium">{relatedProduct.name}</CardTitle>
-                  <CardDescription>{relatedProduct.description}</CardDescription>
+                  <CardTitle className="text-lg font-medium">
+                    {relatedProduct.name}
+                  </CardTitle>
+                  <CardDescription>
+                    {relatedProduct.description}
+                  </CardDescription>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
@@ -417,18 +478,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                           key={`related-star-${relatedProduct.id}-${i}`}
                           className={`h-4 w-4 ${
                             i < Math.floor(relatedProduct.rating)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-neutral-300'
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-neutral-300"
                           }`}
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-neutral-600">({relatedProduct.reviews} reviews)</span>
+                    <span className="text-sm text-neutral-600">
+                      ({relatedProduct.reviews} reviews)
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center">
-                    <div className="text-2xl font-light text-neutral-900">${relatedProduct.price.toFixed(2)}</div>
+                    <div className="text-2xl font-light text-neutral-900">
+                      ${relatedProduct.price.toFixed(2)}
+                    </div>
                     <Link href={`/products/${relatedProduct.id}`}>
                       <Button
                         size="sm"

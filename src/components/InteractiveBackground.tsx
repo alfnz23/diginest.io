@@ -1,42 +1,48 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface InteractiveBackgroundProps {
-  intensity?: 'low' | 'medium' | 'high';
+  intensity?: "low" | "medium" | "high";
 }
 
-export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackgroundProps) {
+export function InteractiveBackground({
+  intensity = "medium",
+}: InteractiveBackgroundProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     // Hide on mobile for better performance
-    if (typeof navigator !== 'undefined') {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (typeof navigator !== "undefined") {
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
       setIsVisible(!isMobile);
     }
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const handleMouseMove = (e: MouseEvent) => {
         setMousePosition({
           x: (e.clientX / window.innerWidth) * 100,
-          y: (e.clientY / window.innerHeight) * 100
+          y: (e.clientY / window.innerHeight) * 100,
         });
       };
 
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => window.removeEventListener('mousemove', handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
     }
   }, []);
 
   if (!isVisible) return null;
 
-  const shapeCount = intensity === 'low' ? 6 : intensity === 'medium' ? 10 : 15;
-  const particleCount = intensity === 'low' ? 20 : intensity === 'medium' ? 35 : 50;
+  const shapeCount = intensity === "low" ? 6 : intensity === "medium" ? 10 : 15;
+  const particleCount =
+    intensity === "low" ? 20 : intensity === "medium" ? 35 : 50;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -44,7 +50,7 @@ export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackg
       <div
         className="absolute inset-0 opacity-30"
         style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 35%, rgba(6, 182, 212, 0.05) 70%, transparent 100%)`
+          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 35%, rgba(6, 182, 212, 0.05) 70%, transparent 100%)`,
         }}
       />
 
@@ -67,10 +73,10 @@ export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackg
               width: size,
               height: size,
               background: [
-                'linear-gradient(45deg, #3b82f6, #06b6d4)',
-                'linear-gradient(45deg, #8b5cf6, #ec4899)',
-                'linear-gradient(45deg, #10b981, #f59e0b)',
-                'linear-gradient(45deg, #ef4444, #f97316)',
+                "linear-gradient(45deg, #3b82f6, #06b6d4)",
+                "linear-gradient(45deg, #8b5cf6, #ec4899)",
+                "linear-gradient(45deg, #10b981, #f59e0b)",
+                "linear-gradient(45deg, #ef4444, #f97316)",
               ][i % 4],
             }}
             animate={{
@@ -80,8 +86,16 @@ export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackg
               y: [0, (mousePosition.y - 50) * 0.3, 0],
             }}
             transition={{
-              rotate: { duration, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
-              scale: { duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
+              rotate: {
+                duration,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              },
+              scale: {
+                duration: 4,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              },
               x: { duration: 2, ease: "easeOut" },
               y: { duration: 2, ease: "easeOut" },
             }}
@@ -127,11 +141,12 @@ export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackg
       <motion.div
         className="absolute w-32 h-32 rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.2) 50%, transparent 70%)',
-          filter: 'blur(20px)',
+          background:
+            "radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.2) 50%, transparent 70%)",
+          filter: "blur(20px)",
           left: `${mousePosition.x}%`,
           top: `${mousePosition.y}%`,
-          transform: 'translate(-50%, -50%)',
+          transform: "translate(-50%, -50%)",
         }}
         animate={{
           scale: [1, 1.2, 1],
@@ -157,11 +172,11 @@ export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackg
             key={uniqueId}
             className="absolute border border-white/10 rounded-full"
             style={{
-              left: '50%',
-              top: '50%',
+              left: "50%",
+              top: "50%",
               width: 100 + i * 100,
               height: 100 + i * 100,
-              transform: 'translate(-50%, -50%)',
+              transform: "translate(-50%, -50%)",
             }}
             animate={{
               scale: [1, 1.5, 1],
@@ -186,9 +201,10 @@ export function InteractiveBackground({ intensity = 'medium' }: InteractiveBackg
               key={uniqueId}
               className="absolute w-24 h-24 rounded-full opacity-0"
               style={{
-                left: `${20 + (i * 15)}%`,
+                left: `${20 + i * 15}%`,
                 top: `${30 + (i % 2) * 40}%`,
-                background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
               }}
               whileHover={{
                 opacity: 1,

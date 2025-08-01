@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,49 +20,59 @@ import Link from "next/link";
 
 export function AuthDialog() {
   const { login, register, isLoading } = useAuth();
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({ email: '', password: '', name: '' });
-  const [error, setError] = useState('');
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [registerData, setRegisterData] = useState({
+    email: "",
+    password: "",
+    name: "",
+  });
+  const [error, setError] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
       const success = await login(loginData.email, loginData.password);
       if (success) {
         setIsOpen(false);
-        setLoginData({ email: '', password: '' });
+        setLoginData({ email: "", password: "" });
       } else {
-        setError('Invalid email or password. Try: admin@diginest.io / password123');
+        setError(
+          "Invalid email or password. Try: admin@diginest.io / password123",
+        );
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError('An error occurred during login. Please try again.');
+      console.error("Login error:", error);
+      setError("An error occurred during login. Please try again.");
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (registerData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError("Password must be at least 6 characters long");
       return;
     }
 
     try {
-      const success = await register(registerData.email, registerData.password, registerData.name);
+      const success = await register(
+        registerData.email,
+        registerData.password,
+        registerData.name,
+      );
       if (success) {
         setIsOpen(false);
-        setRegisterData({ email: '', password: '', name: '' });
+        setRegisterData({ email: "", password: "", name: "" });
       } else {
-        setError('Email already exists or registration failed');
+        setError("Email already exists or registration failed");
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      setError('An error occurred during registration. Please try again.');
+      console.error("Registration error:", error);
+      setError("An error occurred during registration. Please try again.");
     }
   };
 
@@ -89,7 +106,9 @@ export function AuthDialog() {
                   id="login-email"
                   type="email"
                   value={loginData.email}
-                  onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setLoginData((prev) => ({ ...prev, email: e.target.value }))
+                  }
                   placeholder="Enter your email"
                   required
                 />
@@ -100,7 +119,12 @@ export function AuthDialog() {
                   id="login-password"
                   type="password"
                   value={loginData.password}
-                  onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setLoginData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                   placeholder="Enter your password"
                   required
                 />
@@ -143,7 +167,12 @@ export function AuthDialog() {
                 <Input
                   id="register-name"
                   value={registerData.name}
-                  onChange={(e) => setRegisterData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setRegisterData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   placeholder="Enter your full name"
                   required
                 />
@@ -154,7 +183,12 @@ export function AuthDialog() {
                   id="register-email"
                   type="email"
                   value={registerData.email}
-                  onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setRegisterData((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
                   placeholder="Enter your email"
                   required
                 />
@@ -165,7 +199,12 @@ export function AuthDialog() {
                   id="register-password"
                   type="password"
                   value={registerData.password}
-                  onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setRegisterData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                   placeholder="Create a password (min 6 characters)"
                   required
                 />

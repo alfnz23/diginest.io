@@ -12,18 +12,23 @@ export interface EmailTemplate {
 }
 
 export interface EmailTrigger {
-  type: 'welcome' | 'abandoned_cart' | 'product_recommendation' | 'purchase_confirmation' | 'newsletter';
+  type:
+    | "welcome"
+    | "abandoned_cart"
+    | "product_recommendation"
+    | "purchase_confirmation"
+    | "newsletter";
   conditions?: Record<string, string | number | boolean>;
 }
 
 export interface EmailEvent {
   id: string;
   userId: string;
-  type: EmailTrigger['type'];
+  type: EmailTrigger["type"];
   data?: Record<string, string | number | boolean | Product[]>;
   scheduledAt: Date;
   sentAt?: Date;
-  status: 'pending' | 'sent' | 'failed' | 'cancelled';
+  status: "pending" | "sent" | "failed" | "cancelled";
 }
 
 interface EmailStats {
@@ -46,10 +51,11 @@ class EmailAutomationService {
   private initializeTemplates() {
     this.templates = [
       {
-        id: 'welcome-1',
-        name: 'Welcome Email 1',
-        subject: 'Welcome to DigiNest.io! Your journey to productivity starts here 🚀',
-        trigger: { type: 'welcome' },
+        id: "welcome-1",
+        name: "Welcome Email 1",
+        subject:
+          "Welcome to DigiNest.io! Your journey to productivity starts here 🚀",
+        trigger: { type: "welcome" },
         delay: 0,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -74,13 +80,13 @@ class EmailAutomationService {
 
             <p>Best regards,<br>The DigiNest.io Team</p>
           </div>
-        `
+        `,
       },
       {
-        id: 'welcome-2',
-        name: 'Welcome Email 2 - Tips',
-        subject: 'Pro tips to get the most out of your digital products 💡',
-        trigger: { type: 'welcome' },
+        id: "welcome-2",
+        name: "Welcome Email 2 - Tips",
+        subject: "Pro tips to get the most out of your digital products 💡",
+        trigger: { type: "welcome" },
         delay: 24,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -99,13 +105,13 @@ class EmailAutomationService {
 
             <p>P.S. Keep an eye out for our weekly productivity tips and exclusive discounts!</p>
           </div>
-        `
+        `,
       },
       {
-        id: 'abandoned-cart',
-        name: 'Abandoned Cart Recovery',
-        subject: 'You left something amazing in your cart! ✨',
-        trigger: { type: 'abandoned_cart' },
+        id: "abandoned-cart",
+        name: "Abandoned Cart Recovery",
+        subject: "You left something amazing in your cart! ✨",
+        trigger: { type: "abandoned_cart" },
         delay: 2,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -129,13 +135,13 @@ class EmailAutomationService {
               </a>
             </p>
           </div>
-        `
+        `,
       },
       {
-        id: 'product-recommendations',
-        name: 'Product Recommendations',
-        subject: 'Handpicked just for you: New arrivals you\'ll love 🎯',
-        trigger: { type: 'product_recommendation' },
+        id: "product-recommendations",
+        name: "Product Recommendations",
+        subject: "Handpicked just for you: New arrivals you'll love 🎯",
+        trigger: { type: "product_recommendation" },
         delay: 0,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -153,14 +159,18 @@ class EmailAutomationService {
               </a>
             </p>
           </div>
-        `
-      }
+        `,
+      },
     ];
   }
 
   // Trigger email automation
-  public async triggerEmail(type: EmailTrigger['type'], userId: string, data?: Record<string, string | number | boolean | Product[]>) {
-    const templates = this.templates.filter(t => t.trigger.type === type);
+  public async triggerEmail(
+    type: EmailTrigger["type"],
+    userId: string,
+    data?: Record<string, string | number | boolean | Product[]>,
+  ) {
+    const templates = this.templates.filter((t) => t.trigger.type === type);
 
     for (const template of templates) {
       const eventId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -175,11 +185,13 @@ class EmailAutomationService {
         type,
         data: { ...data, templateId: template.id },
         scheduledAt,
-        status: 'pending'
+        status: "pending",
       };
 
       this.events.push(event);
-      console.log(`Email automation scheduled: ${template.name} for user ${userId}`);
+      console.log(
+        `Email automation scheduled: ${template.name} for user ${userId}`,
+      );
     }
   }
 
@@ -188,7 +200,7 @@ class EmailAutomationService {
     setInterval(() => {
       const now = new Date();
       const pendingEvents = this.events.filter(
-        event => event.status === 'pending' && event.scheduledAt <= now
+        (event) => event.status === "pending" && event.scheduledAt <= now,
       );
 
       for (const event of pendingEvents) {
@@ -199,27 +211,30 @@ class EmailAutomationService {
 
   private async sendEmail(event: EmailEvent) {
     try {
-      const template = this.templates.find(t => t.id === event.data?.templateId);
+      const template = this.templates.find(
+        (t) => t.id === event.data?.templateId,
+      );
       if (!template) {
-        event.status = 'failed';
+        event.status = "failed";
         return;
       }
 
       // In production, integrate with actual email service
-      console.log(`📧 Sending email: ${template.subject} to user ${event.userId}`);
+      console.log(
+        `📧 Sending email: ${template.subject} to user ${event.userId}`,
+      );
 
       // Simulate email sending
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      event.status = 'sent';
+      event.status = "sent";
       event.sentAt = new Date();
 
       // Store in analytics/tracking
       this.trackEmailEvent(event, template);
-
     } catch (error) {
-      console.error('Failed to send email:', error);
-      event.status = 'failed';
+      console.error("Failed to send email:", error);
+      event.status = "failed";
     }
   }
 
@@ -231,10 +246,10 @@ class EmailAutomationService {
       templateId: template.id,
       type: event.type,
       sentAt: event.sentAt,
-      subject: template.subject
+      subject: template.subject,
     };
 
-    console.log('📊 Email analytics:', analytics);
+    console.log("📊 Email analytics:", analytics);
 
     // In production, send to analytics service (Google Analytics, Mixpanel, etc.)
   }
@@ -242,10 +257,10 @@ class EmailAutomationService {
   // Get email automation stats
   public getStats(): EmailStats {
     const stats: EmailStats = {
-      totalSent: this.events.filter(e => e.status === 'sent').length,
-      totalPending: this.events.filter(e => e.status === 'pending').length,
-      totalFailed: this.events.filter(e => e.status === 'failed').length,
-      byType: {}
+      totalSent: this.events.filter((e) => e.status === "sent").length,
+      totalPending: this.events.filter((e) => e.status === "pending").length,
+      totalFailed: this.events.filter((e) => e.status === "failed").length,
+      byType: {},
     };
 
     for (const event of this.events) {
@@ -256,16 +271,16 @@ class EmailAutomationService {
   }
 
   // Cancel email automation for user
-  public cancelEmailsForUser(userId: string, type?: EmailTrigger['type']) {
-    const eventsToCancel = this.events
-      .filter(event =>
+  public cancelEmailsForUser(userId: string, type?: EmailTrigger["type"]) {
+    const eventsToCancel = this.events.filter(
+      (event) =>
         event.userId === userId &&
-        event.status === 'pending' &&
-        (!type || event.type === type)
-      );
+        event.status === "pending" &&
+        (!type || event.type === type),
+    );
 
     for (const event of eventsToCancel) {
-      event.status = 'cancelled';
+      event.status = "cancelled";
     }
   }
 }
@@ -275,25 +290,33 @@ export const emailAutomation = new EmailAutomationService();
 
 // Utility functions for common triggers
 export const triggerWelcomeSeries = (user: User) => {
-  emailAutomation.triggerEmail('welcome', user.id, {
+  emailAutomation.triggerEmail("welcome", user.id, {
     user_name: user.name,
     user_email: user.email,
-    site_url: process.env.NEXT_PUBLIC_SITE_URL || 'https://diginest.io'
+    site_url: process.env.NEXT_PUBLIC_SITE_URL || "https://diginest.io",
   });
 };
 
-export const triggerAbandonedCart = (userId: string, cartItems: Product[], cartTotal: number) => {
-  emailAutomation.triggerEmail('abandoned_cart', userId, {
+export const triggerAbandonedCart = (
+  userId: string,
+  cartItems: Product[],
+  cartTotal: number,
+) => {
+  emailAutomation.triggerEmail("abandoned_cart", userId, {
     cart_items: cartItems,
     cart_total: cartTotal.toFixed(2),
-    site_url: process.env.NEXT_PUBLIC_SITE_URL || 'https://diginest.io'
+    site_url: process.env.NEXT_PUBLIC_SITE_URL || "https://diginest.io",
   });
 };
 
-export const triggerProductRecommendations = (userId: string, userCategories: string[], recommendedProducts: Product[]) => {
-  emailAutomation.triggerEmail('product_recommendation', userId, {
-    user_categories: userCategories.join(', '),
+export const triggerProductRecommendations = (
+  userId: string,
+  userCategories: string[],
+  recommendedProducts: Product[],
+) => {
+  emailAutomation.triggerEmail("product_recommendation", userId, {
+    user_categories: userCategories.join(", "),
     recommended_products: recommendedProducts,
-    site_url: process.env.NEXT_PUBLIC_SITE_URL || 'https://diginest.io'
+    site_url: process.env.NEXT_PUBLIC_SITE_URL || "https://diginest.io",
   });
 };

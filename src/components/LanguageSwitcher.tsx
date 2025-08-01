@@ -9,7 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useI18n, supportedLanguages, type Language } from "@/contexts/I18nContext";
+import {
+  useI18n,
+  supportedLanguages,
+  type Language,
+} from "@/contexts/I18nContext";
 import { Globe, Check } from "lucide-react";
 
 declare global {
@@ -23,7 +27,10 @@ interface LanguageSwitcherProps {
   showLabel?: boolean;
 }
 
-export function LanguageSwitcher({ variant = "default", showLabel = false }: LanguageSwitcherProps) {
+export function LanguageSwitcher({
+  variant = "default",
+  showLabel = false,
+}: LanguageSwitcherProps) {
   const { language, setLanguage, getCurrentLanguage, t } = useI18n();
   const currentLang = getCurrentLanguage();
 
@@ -31,11 +38,11 @@ export function LanguageSwitcher({ variant = "default", showLabel = false }: Lan
     setLanguage(newLanguage);
 
     // Optional: Track language changes for analytics
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'language_change', {
-        event_category: 'engagement',
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "language_change", {
+        event_category: "engagement",
         event_label: newLanguage,
-        value: 1
+        value: 1,
       });
     }
   };
@@ -72,7 +79,9 @@ export function LanguageSwitcher({ variant = "default", showLabel = false }: Lan
   if (variant === "mobile") {
     return (
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-neutral-700">{t('common.language')}</h3>
+        <h3 className="text-sm font-medium text-neutral-700">
+          {t("common.language")}
+        </h3>
         <div className="grid grid-cols-3 gap-2">
           {supportedLanguages.map((lang) => (
             <Button
@@ -98,13 +107,17 @@ export function LanguageSwitcher({ variant = "default", showLabel = false }: Lan
           <Globe className="h-4 w-4" />
           <span className="text-sm">{currentLang.flag}</span>
           {showLabel && (
-            <span className="hidden sm:inline text-sm">{currentLang.nativeName}</span>
+            <span className="hidden sm:inline text-sm">
+              {currentLang.nativeName}
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <div className="p-2 border-b border-neutral-200">
-          <h3 className="text-sm font-medium text-neutral-700">Choose Language</h3>
+          <h3 className="text-sm font-medium text-neutral-700">
+            Choose Language
+          </h3>
         </div>
         <div className="max-h-64 overflow-y-auto">
           {supportedLanguages.map((lang) => (
@@ -140,7 +153,10 @@ export function LanguageSwitcher({ variant = "default", showLabel = false }: Lan
 }
 
 // Currency display component
-export function CurrencyDisplay({ amount, showCode = false }: { amount: number; showCode?: boolean }) {
+export function CurrencyDisplay({
+  amount,
+  showCode = false,
+}: { amount: number; showCode?: boolean }) {
   const { formatPrice, getCurrentLanguage } = useI18n();
   const currentLang = getCurrentLanguage();
 

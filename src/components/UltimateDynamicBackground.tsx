@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 
 interface UltimateDynamicBackgroundProps {
-  theme?: 'light' | 'dark' | 'gradient' | 'cosmic' | 'ocean' | 'sunset';
-  intensity?: 'minimal' | 'moderate' | 'intense' | 'maximum';
+  theme?: "light" | "dark" | "gradient" | "cosmic" | "ocean" | "sunset";
+  intensity?: "minimal" | "moderate" | "intense" | "maximum";
   interactive?: boolean;
-  animationSpeed?: 'slow' | 'normal' | 'fast';
+  animationSpeed?: "slow" | "normal" | "fast";
 }
 
 export function UltimateDynamicBackground({
-  theme = 'gradient',
-  intensity = 'moderate',
+  theme = "gradient",
+  intensity = "moderate",
   interactive = true,
-  animationSpeed = 'normal'
+  animationSpeed = "normal",
 }: UltimateDynamicBackgroundProps) {
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [isVisible, setIsVisible] = useState(true);
@@ -23,9 +23,13 @@ export function UltimateDynamicBackground({
   // Performance optimization - detect device capabilities
   useEffect(() => {
     const checkPerformance = () => {
-      if (typeof navigator !== 'undefined') {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+      if (typeof navigator !== "undefined") {
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent,
+          );
+        const isLowEnd =
+          navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
         setIsVisible(!isMobile && !isLowEnd);
       }
     };
@@ -35,23 +39,23 @@ export function UltimateDynamicBackground({
 
   // Mouse tracking for interactive effects
   useEffect(() => {
-    if (!interactive || typeof window === 'undefined') return;
+    if (!interactive || typeof window === "undefined") return;
 
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
+        y: (e.clientY / window.innerHeight) * 100,
       });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [interactive]);
 
   // Time-based animations
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(prev => (prev + 1) % 3600); // Reset every hour
+      setCurrentTime((prev) => (prev + 1) % 3600); // Reset every hour
     }, 100);
 
     return () => clearInterval(interval);
@@ -61,53 +65,58 @@ export function UltimateDynamicBackground({
   const themeConfig = useMemo(() => {
     const themes = {
       light: {
-        primary: 'rgba(59, 130, 246, 0.15)',
-        secondary: 'rgba(139, 92, 246, 0.12)',
-        accent: 'rgba(6, 182, 212, 0.1)',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        particles: 'rgba(100, 116, 139, 0.4)',
-        overlay: 'rgba(255, 255, 255, 0.1)'
+        primary: "rgba(59, 130, 246, 0.15)",
+        secondary: "rgba(139, 92, 246, 0.12)",
+        accent: "rgba(6, 182, 212, 0.1)",
+        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        particles: "rgba(100, 116, 139, 0.4)",
+        overlay: "rgba(255, 255, 255, 0.1)",
       },
       dark: {
-        primary: 'rgba(0, 0, 0, 0.6)',
-        secondary: 'rgba(45, 45, 45, 0.4)',
-        accent: 'rgba(100, 100, 100, 0.3)',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-        particles: 'rgba(148, 163, 184, 0.5)',
-        overlay: 'rgba(0, 0, 0, 0.2)'
+        primary: "rgba(0, 0, 0, 0.6)",
+        secondary: "rgba(45, 45, 45, 0.4)",
+        accent: "rgba(100, 100, 100, 0.3)",
+        background:
+          "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)",
+        particles: "rgba(148, 163, 184, 0.5)",
+        overlay: "rgba(0, 0, 0, 0.2)",
       },
       gradient: {
-        primary: 'rgba(236, 72, 153, 0.15)',
-        secondary: 'rgba(79, 70, 229, 0.12)',
-        accent: 'rgba(16, 185, 129, 0.1)',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
-        particles: 'rgba(255, 255, 255, 0.6)',
-        overlay: 'rgba(255, 255, 255, 0.15)'
+        primary: "rgba(236, 72, 153, 0.15)",
+        secondary: "rgba(79, 70, 229, 0.12)",
+        accent: "rgba(16, 185, 129, 0.1)",
+        background:
+          "linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)",
+        particles: "rgba(255, 255, 255, 0.6)",
+        overlay: "rgba(255, 255, 255, 0.15)",
       },
       cosmic: {
-        primary: 'rgba(139, 69, 19, 0.2)',
-        secondary: 'rgba(75, 0, 130, 0.15)',
-        accent: 'rgba(255, 20, 147, 0.1)',
-        background: 'linear-gradient(135deg, #0c0c0c 0%, #2d1b69 50%, #11092d 100%)',
-        particles: 'rgba(255, 255, 255, 0.8)',
-        overlay: 'rgba(138, 43, 226, 0.1)'
+        primary: "rgba(139, 69, 19, 0.2)",
+        secondary: "rgba(75, 0, 130, 0.15)",
+        accent: "rgba(255, 20, 147, 0.1)",
+        background:
+          "linear-gradient(135deg, #0c0c0c 0%, #2d1b69 50%, #11092d 100%)",
+        particles: "rgba(255, 255, 255, 0.8)",
+        overlay: "rgba(138, 43, 226, 0.1)",
       },
       ocean: {
-        primary: 'rgba(0, 191, 255, 0.2)',
-        secondary: 'rgba(30, 144, 255, 0.15)',
-        accent: 'rgba(0, 206, 209, 0.1)',
-        background: 'linear-gradient(135deg, #006994 0%, #0077be 50%, #87ceeb 100%)',
-        particles: 'rgba(255, 255, 255, 0.7)',
-        overlay: 'rgba(0, 191, 255, 0.1)'
+        primary: "rgba(0, 191, 255, 0.2)",
+        secondary: "rgba(30, 144, 255, 0.15)",
+        accent: "rgba(0, 206, 209, 0.1)",
+        background:
+          "linear-gradient(135deg, #006994 0%, #0077be 50%, #87ceeb 100%)",
+        particles: "rgba(255, 255, 255, 0.7)",
+        overlay: "rgba(0, 191, 255, 0.1)",
       },
       sunset: {
-        primary: 'rgba(255, 94, 77, 0.2)',
-        secondary: 'rgba(255, 154, 0, 0.15)',
-        accent: 'rgba(255, 206, 84, 0.1)',
-        background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 50%, #ffcc02 100%)',
-        particles: 'rgba(255, 255, 255, 0.6)',
-        overlay: 'rgba(255, 87, 34, 0.1)'
-      }
+        primary: "rgba(255, 94, 77, 0.2)",
+        secondary: "rgba(255, 154, 0, 0.15)",
+        accent: "rgba(255, 206, 84, 0.1)",
+        background:
+          "linear-gradient(135deg, #ff6b6b 0%, #ffa726 50%, #ffcc02 100%)",
+        particles: "rgba(255, 255, 255, 0.6)",
+        overlay: "rgba(255, 87, 34, 0.1)",
+      },
     };
     return themes[theme];
   }, [theme]);
@@ -117,7 +126,7 @@ export function UltimateDynamicBackground({
     const speeds = {
       slow: { multiplier: 0.5, duration: 40 },
       normal: { multiplier: 1, duration: 25 },
-      fast: { multiplier: 1.5, duration: 15 }
+      fast: { multiplier: 1.5, duration: 15 },
     };
     return speeds[animationSpeed];
   }, [animationSpeed]);
@@ -128,14 +137,17 @@ export function UltimateDynamicBackground({
       minimal: { orbs: 3, waves: 2, particles: 15, geometrics: 4 },
       moderate: { orbs: 6, waves: 4, particles: 30, geometrics: 8 },
       intense: { orbs: 10, waves: 6, particles: 50, geometrics: 12 },
-      maximum: { orbs: 15, waves: 8, particles: 80, geometrics: 16 }
+      maximum: { orbs: 15, waves: 8, particles: 80, geometrics: 16 },
     };
     return counts[intensity];
   }, [intensity]);
 
   if (!isVisible) {
     return (
-      <div className="fixed inset-0 pointer-events-none z-[-1]" style={{ background: themeConfig.background }} />
+      <div
+        className="fixed inset-0 pointer-events-none z-[-1]"
+        style={{ background: themeConfig.background }}
+      />
     );
   }
 
@@ -146,7 +158,7 @@ export function UltimateDynamicBackground({
         className="absolute inset-0"
         style={{ background: themeConfig.background }}
         animate={{
-          backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+          backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
         }}
         transition={{
           duration: speedConfig.duration,
@@ -157,9 +169,9 @@ export function UltimateDynamicBackground({
 
       {/* Dynamic floating orbs */}
       {[...Array(elementCounts.orbs)].map((_, i) => {
-        const size = 80 + (i * 40);
+        const size = 80 + i * 40;
         const delay = i * (speedConfig.duration / elementCounts.orbs);
-        const duration = speedConfig.duration + (i * 5);
+        const duration = speedConfig.duration + i * 5;
         const uniqueKey = `orb-${theme}-${i}-${Date.now()}`;
 
         return (
@@ -170,7 +182,7 @@ export function UltimateDynamicBackground({
               width: size,
               height: size,
               background: `radial-gradient(circle, ${themeConfig.primary}, transparent 70%)`,
-              filter: 'blur(25px)',
+              filter: "blur(25px)",
             }}
             initial={{
               x: `${Math.random() * 100}%`,
@@ -181,13 +193,13 @@ export function UltimateDynamicBackground({
                 `${Math.random() * 100}%`,
                 `${Math.random() * 100}%`,
                 `${Math.random() * 100}%`,
-                `${Math.random() * 100}%`
+                `${Math.random() * 100}%`,
               ],
               y: [
                 `${Math.random() * 100}%`,
                 `${Math.random() * 100}%`,
                 `${Math.random() * 100}%`,
-                `${Math.random() * 100}%`
+                `${Math.random() * 100}%`,
               ],
               scale: [1, 1.5, 0.8, 1.2, 1],
               opacity: [0.3, 0.8, 0.4, 0.9, 0.3],
@@ -204,7 +216,7 @@ export function UltimateDynamicBackground({
 
       {/* Flowing waves */}
       {[...Array(elementCounts.waves)].map((_, i) => {
-        const height = 150 + (i * 50);
+        const height = 150 + i * 50;
         const delay = i * 4;
         const uniqueKey = `wave-${theme}-${i}-${Date.now()}`;
 
@@ -214,18 +226,18 @@ export function UltimateDynamicBackground({
             className="absolute w-full opacity-40"
             style={{
               height: height,
-              top: `${15 + (i * 20)}%`,
+              top: `${15 + i * 20}%`,
               background: `linear-gradient(90deg,
                 transparent 0%,
                 ${themeConfig.secondary} 25%,
                 ${themeConfig.primary} 50%,
                 ${themeConfig.accent} 75%,
                 transparent 100%)`,
-              borderRadius: '50%',
-              filter: 'blur(30px)',
+              borderRadius: "50%",
+              filter: "blur(30px)",
             }}
             animate={{
-              x: ['-120%', '120%'],
+              x: ["-120%", "120%"],
               scaleY: [1, 1.8, 1.2, 1],
               opacity: [0, 0.6, 0.8, 0],
             }}
@@ -242,8 +254,8 @@ export function UltimateDynamicBackground({
       {/* Enhanced geometric patterns */}
       {[...Array(elementCounts.geometrics)].map((_, i) => {
         const size = 25 + (i % 4) * 25;
-        const x = 8 + (i * 11) % 84;
-        const y = 12 + (i * 13) % 76;
+        const x = 8 + ((i * 11) % 84);
+        const y = 12 + ((i * 13) % 76);
         const rotation = i * 30;
         const uniqueKey = `geo-${theme}-${i}-${Date.now()}`;
 
@@ -292,8 +304,8 @@ export function UltimateDynamicBackground({
                 className="w-full h-full"
                 style={{
                   background: `conic-gradient(from 0deg, ${themeConfig.primary}, transparent, ${themeConfig.accent})`,
-                  borderRadius: '30%',
-                  filter: 'blur(8px)',
+                  borderRadius: "30%",
+                  filter: "blur(8px)",
                 }}
               />
             )}
@@ -301,7 +313,7 @@ export function UltimateDynamicBackground({
               <div
                 className="w-full h-full"
                 style={{
-                  clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                  clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
                   background: themeConfig.primary,
                   filter: `drop-shadow(0 0 10px ${themeConfig.primary})`,
                 }}
@@ -326,10 +338,10 @@ export function UltimateDynamicBackground({
           className="absolute w-80 h-80 rounded-full pointer-events-none"
           style={{
             background: `radial-gradient(circle, ${themeConfig.primary} 0%, ${themeConfig.secondary} 40%, transparent 70%)`,
-            filter: 'blur(50px)',
+            filter: "blur(50px)",
             left: `${mousePosition.x}%`,
             top: `${mousePosition.y}%`,
-            transform: 'translate(-50%, -50%)',
+            transform: "translate(-50%, -50%)",
           }}
           animate={{
             scale: [1, 1.3, 1.1, 1],
@@ -385,7 +397,7 @@ export function UltimateDynamicBackground({
         className="absolute top-0 left-0 w-96 h-96"
         style={{
           background: `radial-gradient(circle, ${themeConfig.primary} 0%, transparent 70%)`,
-          filter: 'blur(80px)',
+          filter: "blur(80px)",
         }}
         animate={{
           scale: [1, 1.5, 1.2, 1],
@@ -402,7 +414,7 @@ export function UltimateDynamicBackground({
         className="absolute bottom-0 right-0 w-96 h-96"
         style={{
           background: `radial-gradient(circle, ${themeConfig.accent} 0%, transparent 70%)`,
-          filter: 'blur(80px)',
+          filter: "blur(80px)",
         }}
         animate={{
           scale: [1.5, 1, 1.3, 1.5],
@@ -421,8 +433,8 @@ export function UltimateDynamicBackground({
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px]"
         style={{
           background: `linear-gradient(90deg, transparent, ${themeConfig.secondary}, ${themeConfig.accent}, transparent)`,
-          filter: 'blur(100px)',
-          borderRadius: '50%',
+          filter: "blur(100px)",
+          borderRadius: "50%",
         }}
         animate={{
           rotate: [0, 360],
@@ -441,7 +453,7 @@ export function UltimateDynamicBackground({
         className="absolute inset-0"
         style={{
           background: themeConfig.overlay,
-          mixBlendMode: 'overlay',
+          mixBlendMode: "overlay",
         }}
         animate={{
           opacity: [0.1, 0.3, 0.2, 0.1],
@@ -461,10 +473,10 @@ export function UltimateDynamicBackground({
             linear-gradient(${themeConfig.particles} 1px, transparent 1px),
             linear-gradient(90deg, ${themeConfig.particles} 1px, transparent 1px)
           `,
-          backgroundSize: '60px 60px',
+          backgroundSize: "60px 60px",
         }}
         animate={{
-          backgroundPosition: ['0px 0px', '60px 60px', '0px 0px'],
+          backgroundPosition: ["0px 0px", "60px 60px", "0px 0px"],
         }}
         transition={{
           duration: 30 * speedConfig.multiplier,

@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Mail, Check, Gift, Zap, TrendingUp } from "lucide-react";
 
 export function EmailNewsletter() {
@@ -18,7 +24,7 @@ export function EmailNewsletter() {
     setIsLoading(true);
 
     // Simulate API call to email service
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setIsSubscribed(true);
     setIsLoading(false);
@@ -44,7 +50,8 @@ export function EmailNewsletter() {
               Welcome to DigiNest.io!
             </h3>
             <p className="text-green-700 text-sm">
-              Thanks for subscribing! Check your email for a special welcome discount.
+              Thanks for subscribing! Check your email for a special welcome
+              discount.
             </p>
           </div>
         </CardContent>
@@ -60,7 +67,8 @@ export function EmailNewsletter() {
         </div>
         <CardTitle className="text-xl text-white">Stay Updated</CardTitle>
         <CardDescription className="text-neutral-300">
-          Get the latest digital products, exclusive discounts, and productivity tips
+          Get the latest digital products, exclusive discounts, and productivity
+          tips
         </CardDescription>
       </CardHeader>
 
@@ -68,7 +76,9 @@ export function EmailNewsletter() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div className="flex flex-col items-center">
             <Gift className="h-5 w-5 text-neutral-300 mb-2" />
-            <span className="text-xs text-neutral-400">Exclusive Discounts</span>
+            <span className="text-xs text-neutral-400">
+              Exclusive Discounts
+            </span>
           </div>
           <div className="flex flex-col items-center">
             <Zap className="h-5 w-5 text-neutral-300 mb-2" />
@@ -117,7 +127,7 @@ export function FooterNewsletter() {
     if (!email) return;
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsSubscribed(true);
     setIsLoading(false);
     setEmail("");

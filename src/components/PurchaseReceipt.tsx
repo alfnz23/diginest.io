@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Download, Receipt, CheckCircle, Calendar, CreditCard, Mail } from "lucide-react";
+import {
+  Download,
+  Receipt,
+  CheckCircle,
+  Calendar,
+  CreditCard,
+  Mail,
+} from "lucide-react";
 import type { CartItem } from "@/contexts/CartContext";
 
 interface PurchaseReceiptData {
@@ -31,14 +38,18 @@ interface PurchaseReceiptProps {
   onPrint?: () => void;
 }
 
-export function PurchaseReceipt({ receiptData, onDownloadReceipt, onPrint }: PurchaseReceiptProps) {
+export function PurchaseReceipt({
+  receiptData,
+  onDownloadReceipt,
+  onPrint,
+}: PurchaseReceiptProps) {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -53,21 +64,24 @@ Customer: ${receiptData.customerName}
 Email: ${receiptData.customerEmail}
 
 ITEMS PURCHASED:
-${receiptData.items.map(item =>
-  `- ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}`
-).join('\n')}
+${receiptData.items
+  .map(
+    (item) =>
+      `- ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}`,
+  )
+  .join("\n")}
 
 PAYMENT SUMMARY:
 Subtotal: $${receiptData.subtotal.toFixed(2)}
-${receiptData.tax ? `Tax: $${receiptData.tax.toFixed(2)}\n` : ''}Total: $${receiptData.total.toFixed(2)}
+${receiptData.tax ? `Tax: $${receiptData.tax.toFixed(2)}\n` : ""}Total: $${receiptData.total.toFixed(2)}
 
 Payment Method: ${receiptData.paymentMethod}
-${receiptData.transactionId ? `Transaction ID: ${receiptData.transactionId}\n` : ''}
+${receiptData.transactionId ? `Transaction ID: ${receiptData.transactionId}\n` : ""}
 
 DOWNLOAD LINKS:
-${receiptData.downloadUrls.map(download =>
-  `- ${download.productName}: ${download.downloadUrl}`
-).join('\n')}
+${receiptData.downloadUrls
+  .map((download) => `- ${download.productName}: ${download.downloadUrl}`)
+  .join("\n")}
 
 Thank you for your purchase!
 DigiNest.io - Premium Digital Products
@@ -76,9 +90,9 @@ DigiNest.io - Premium Digital Products
 
   const downloadAsText = () => {
     const receipt = generateReceiptText();
-    const blob = new Blob([receipt], { type: 'text/plain' });
+    const blob = new Blob([receipt], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `DigiNest-Receipt-${receiptData.orderId}.txt`;
     document.body.appendChild(a);
@@ -88,7 +102,7 @@ DigiNest.io - Premium Digital Products
   };
 
   const printReceipt = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
     const printContent = `
@@ -123,12 +137,16 @@ DigiNest.io - Premium Digital Products
 
           <div class="section">
             <strong>Items Purchased:</strong>
-            ${receiptData.items.map(item => `
+            ${receiptData.items
+              .map(
+                (item) => `
               <div class="item">
                 <span>${item.name} (${item.quantity}x)</span>
                 <span>$${(item.price * item.quantity).toFixed(2)}</span>
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </div>
 
           <div class="section">
@@ -136,12 +154,16 @@ DigiNest.io - Premium Digital Products
               <span>Subtotal:</span>
               <span>$${receiptData.subtotal.toFixed(2)}</span>
             </div>
-            ${receiptData.tax ? `
+            ${
+              receiptData.tax
+                ? `
               <div class="item">
                 <span>Tax:</span>
                 <span>$${receiptData.tax.toFixed(2)}</span>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             <div class="item total">
               <span>Total:</span>
               <span>$${receiptData.total.toFixed(2)}</span>
@@ -150,17 +172,21 @@ DigiNest.io - Premium Digital Products
 
           <div class="section">
             <strong>Payment Method:</strong> ${receiptData.paymentMethod}<br>
-            ${receiptData.transactionId ? `<strong>Transaction ID:</strong> ${receiptData.transactionId}<br>` : ''}
+            ${receiptData.transactionId ? `<strong>Transaction ID:</strong> ${receiptData.transactionId}<br>` : ""}
           </div>
 
           <div class="section">
             <strong>Download Links:</strong><br>
-            ${receiptData.downloadUrls.map(download => `
+            ${receiptData.downloadUrls
+              .map(
+                (download) => `
               <div style="margin: 5px 0;">
                 • ${download.productName}<br>
                 <small style="color: #666;">${download.downloadUrl}</small>
               </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </div>
 
           <div style="text-align: center; margin-top: 30px; color: #666;">
@@ -184,9 +210,13 @@ DigiNest.io - Premium Digital Products
       <CardHeader className="text-center bg-gradient-to-r from-green-50 to-blue-50">
         <div className="flex items-center justify-center gap-2 mb-2">
           <CheckCircle className="h-8 w-8 text-green-600" />
-          <CardTitle className="text-2xl text-green-700">Purchase Complete!</CardTitle>
+          <CardTitle className="text-2xl text-green-700">
+            Purchase Complete!
+          </CardTitle>
         </div>
-        <p className="text-green-600">Your digital products are ready for download</p>
+        <p className="text-green-600">
+          Your digital products are ready for download
+        </p>
       </CardHeader>
 
       <CardContent className="space-y-6 p-6">
@@ -195,14 +225,19 @@ DigiNest.io - Premium Digital Products
           <div className="flex items-center gap-3">
             <Receipt className="h-6 w-6 text-neutral-600" />
             <div>
-              <h3 className="font-semibold text-lg">Order #{receiptData.orderId}</h3>
+              <h3 className="font-semibold text-lg">
+                Order #{receiptData.orderId}
+              </h3>
               <div className="flex items-center gap-2 text-sm text-neutral-600">
                 <Calendar className="h-4 w-4" />
                 {formatDate(receiptData.orderDate)}
               </div>
             </div>
           </div>
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200"
+          >
             Completed
           </Badge>
         </div>
@@ -210,7 +245,9 @@ DigiNest.io - Premium Digital Products
         {/* Customer Info */}
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium text-neutral-900">Customer Information</h4>
+            <h4 className="font-medium text-neutral-900">
+              Customer Information
+            </h4>
             <div className="text-sm text-neutral-600">
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
@@ -220,14 +257,18 @@ DigiNest.io - Premium Digital Products
             </div>
           </div>
           <div className="space-y-2">
-            <h4 className="font-medium text-neutral-900">Payment Information</h4>
+            <h4 className="font-medium text-neutral-900">
+              Payment Information
+            </h4>
             <div className="text-sm text-neutral-600">
               <p className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 {receiptData.paymentMethod}
               </p>
               {receiptData.transactionId && (
-                <p className="mt-1 font-mono text-xs">ID: {receiptData.transactionId}</p>
+                <p className="mt-1 font-mono text-xs">
+                  ID: {receiptData.transactionId}
+                </p>
               )}
             </div>
           </div>
@@ -239,15 +280,24 @@ DigiNest.io - Premium Digital Products
         <div className="space-y-4">
           <h4 className="font-medium text-neutral-900">Items Purchased</h4>
           {receiptData.items.map((item, index) => (
-            <div key={`receipt-item-${item.id}-${index}`} className="flex justify-between items-center p-3 border rounded-lg">
+            <div
+              key={`receipt-item-${item.id}-${index}`}
+              className="flex justify-between items-center p-3 border rounded-lg"
+            >
               <div className="flex-1">
                 <h5 className="font-medium">{item.name}</h5>
                 <p className="text-sm text-neutral-600">{item.description}</p>
-                <p className="text-xs text-neutral-500">Quantity: {item.quantity}</p>
+                <p className="text-xs text-neutral-500">
+                  Quantity: {item.quantity}
+                </p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                <p className="text-sm text-neutral-600">${item.price.toFixed(2)} each</p>
+                <p className="font-medium">
+                  ${(item.price * item.quantity).toFixed(2)}
+                </p>
+                <p className="text-sm text-neutral-600">
+                  ${item.price.toFixed(2)} each
+                </p>
               </div>
             </div>
           ))}
@@ -281,7 +331,10 @@ DigiNest.io - Premium Digital Products
           <h4 className="font-medium text-neutral-900">Your Downloads</h4>
           <div className="grid gap-3">
             {receiptData.downloadUrls.map((download, index) => (
-              <div key={`download-${download.productId}-${index}`} className="flex items-center justify-between p-3 border rounded-lg bg-blue-50/50">
+              <div
+                key={`download-${download.productId}-${index}`}
+                className="flex items-center justify-between p-3 border rounded-lg bg-blue-50/50"
+              >
                 <div>
                   <p className="font-medium">{download.productName}</p>
                   <p className="text-xs text-neutral-600">Ready for download</p>
@@ -299,11 +352,19 @@ DigiNest.io - Premium Digital Products
 
         {/* Actions */}
         <div className="flex flex-wrap gap-3 justify-center">
-          <Button onClick={downloadAsText} variant="outline" className="flex items-center gap-2">
+          <Button
+            onClick={downloadAsText}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
             <Download className="h-4 w-4" />
             Download Receipt
           </Button>
-          <Button onClick={printReceipt} variant="outline" className="flex items-center gap-2">
+          <Button
+            onClick={printReceipt}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
             <Receipt className="h-4 w-4" />
             Print Receipt
           </Button>
@@ -317,8 +378,18 @@ DigiNest.io - Premium Digital Products
         {/* Support Info */}
         <div className="text-center text-sm text-neutral-600 bg-neutral-50 p-4 rounded-lg">
           <p className="font-medium mb-2">Need Help?</p>
-          <p>Contact our support team at <a href="mailto:support@diginest.io" className="text-blue-600 hover:underline">support@diginest.io</a></p>
-          <p className="mt-1">We're here to help with any questions about your purchase!</p>
+          <p>
+            Contact our support team at{" "}
+            <a
+              href="mailto:support@diginest.io"
+              className="text-blue-600 hover:underline"
+            >
+              support@diginest.io
+            </a>
+          </p>
+          <p className="mt-1">
+            We're here to help with any questions about your purchase!
+          </p>
         </div>
       </CardContent>
     </Card>

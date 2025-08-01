@@ -6,7 +6,7 @@ import ProductsPageClient from "@/components/ProductsPageClient";
 import { BlueprintBackground } from "@/components/BlueprintBackground";
 
 // Force dynamic rendering - disable all static generation
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default function ProductsPage() {
@@ -23,7 +23,10 @@ export default function ProductsPage() {
               <Link href="/" className="text-2xl font-bold text-neutral-900">
                 DigiNest.io
               </Link>
-              <Link href="/" className="flex items-center text-neutral-600 hover:text-neutral-900">
+              <Link
+                href="/"
+                className="flex items-center text-neutral-600 hover:text-neutral-900"
+              >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to Home
               </Link>
@@ -39,8 +42,12 @@ export default function ProductsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-light text-neutral-900 mb-2">All Products</h1>
-          <p className="text-neutral-600">Discover our complete collection of premium digital products</p>
+          <h1 className="text-3xl font-light text-neutral-900 mb-2">
+            All Products
+          </h1>
+          <p className="text-neutral-600">
+            Discover our complete collection of premium digital products
+          </p>
         </div>
 
         {/* Products Client Component */}

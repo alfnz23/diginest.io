@@ -1,13 +1,20 @@
 "use client";
 
-import { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Sphere, Box, Cylinder, Torus } from '@react-three/drei';
-import { motion } from 'framer-motion';
-import type * as THREE from 'three';
+import { useRef, useState, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import {
+  OrbitControls,
+  Text,
+  Sphere,
+  Box,
+  Cylinder,
+  Torus,
+} from "@react-three/drei";
+import { motion } from "framer-motion";
+import type * as THREE from "three";
 
 interface RobotProps {
-  emotion: 'happy' | 'excited' | 'curious' | 'thinking' | 'celebrating';
+  emotion: "happy" | "excited" | "curious" | "thinking" | "celebrating";
   mousePosition: { x: number; y: number };
 }
 
@@ -29,8 +36,10 @@ function Robot({ emotion, mousePosition }: RobotProps) {
     const targetX = mouseX * 2;
     const targetY = mouseY * 1;
 
-    robotRef.current.position.x += (targetX - robotRef.current.position.x) * 0.05;
-    robotRef.current.position.y += (targetY - robotRef.current.position.y) * 0.05;
+    robotRef.current.position.x +=
+      (targetX - robotRef.current.position.x) * 0.05;
+    robotRef.current.position.y +=
+      (targetY - robotRef.current.position.y) * 0.05;
 
     // Gentle floating animation
     robotRef.current.position.z = Math.sin(state.clock.elapsedTime * 2) * 0.1;
@@ -50,19 +59,21 @@ function Robot({ emotion, mousePosition }: RobotProps) {
     // Emotion-based animations
     if (mouthRef.current) {
       switch (emotion) {
-        case 'happy':
+        case "happy":
           mouthRef.current.scale.x = 1.2;
           mouthRef.current.rotation.z = 0;
           break;
-        case 'excited':
+        case "excited":
           mouthRef.current.scale.x = 1.5;
           mouthRef.current.scale.y = 1.2;
           break;
-        case 'celebrating':
-          robotRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 8) * 0.2;
+        case "celebrating":
+          robotRef.current.rotation.z =
+            Math.sin(state.clock.elapsedTime * 8) * 0.2;
           break;
-        case 'thinking':
-          robotRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 3) * 0.1;
+        case "thinking":
+          robotRef.current.rotation.x =
+            Math.sin(state.clock.elapsedTime * 3) * 0.1;
           break;
       }
     }
@@ -71,11 +82,16 @@ function Robot({ emotion, mousePosition }: RobotProps) {
   // Eye colors based on emotion
   const getEyeColor = () => {
     switch (emotion) {
-      case 'happy': return '#4ade80';
-      case 'excited': return '#f59e0b';
-      case 'celebrating': return '#ec4899';
-      case 'thinking': return '#3b82f6';
-      default: return '#06b6d4';
+      case "happy":
+        return "#4ade80";
+      case "excited":
+        return "#f59e0b";
+      case "celebrating":
+        return "#ec4899";
+      case "thinking":
+        return "#3b82f6";
+      default:
+        return "#06b6d4";
     }
   };
 
@@ -104,11 +120,27 @@ function Robot({ emotion, mousePosition }: RobotProps) {
       </Sphere>
 
       {/* Eyes */}
-      <Sphere ref={eyeLeftRef} position={[-0.15, 0.4, 0.3]} scale={[0.08, 0.08, 0.05]}>
-        <meshStandardMaterial color={getEyeColor()} emissive={getEyeColor()} emissiveIntensity={0.3} />
+      <Sphere
+        ref={eyeLeftRef}
+        position={[-0.15, 0.4, 0.3]}
+        scale={[0.08, 0.08, 0.05]}
+      >
+        <meshStandardMaterial
+          color={getEyeColor()}
+          emissive={getEyeColor()}
+          emissiveIntensity={0.3}
+        />
       </Sphere>
-      <Sphere ref={eyeRightRef} position={[0.15, 0.4, 0.3]} scale={[0.08, 0.08, 0.05]}>
-        <meshStandardMaterial color={getEyeColor()} emissive={getEyeColor()} emissiveIntensity={0.3} />
+      <Sphere
+        ref={eyeRightRef}
+        position={[0.15, 0.4, 0.3]}
+        scale={[0.08, 0.08, 0.05]}
+      >
+        <meshStandardMaterial
+          color={getEyeColor()}
+          emissive={getEyeColor()}
+          emissiveIntensity={0.3}
+        />
       </Sphere>
 
       {/* Mouth */}
@@ -126,14 +158,26 @@ function Robot({ emotion, mousePosition }: RobotProps) {
         <meshStandardMaterial color="#6b7280" />
       </Cylinder>
       <Sphere position={[0, 0.85, 0]} scale={[0.05, 0.05, 0.05]}>
-        <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.5} />
+        <meshStandardMaterial
+          color="#ef4444"
+          emissive="#ef4444"
+          emissiveIntensity={0.5}
+        />
       </Sphere>
 
       {/* Arms */}
-      <Cylinder position={[-0.6, -0.1, 0]} rotation={[0, 0, Math.PI / 6]} scale={[0.08, 0.4, 0.08]}>
+      <Cylinder
+        position={[-0.6, -0.1, 0]}
+        rotation={[0, 0, Math.PI / 6]}
+        scale={[0.08, 0.4, 0.08]}
+      >
         <meshStandardMaterial color="#d1d5db" />
       </Cylinder>
-      <Cylinder position={[0.6, -0.1, 0]} rotation={[0, 0, -Math.PI / 6]} scale={[0.08, 0.4, 0.08]}>
+      <Cylinder
+        position={[0.6, -0.1, 0]}
+        rotation={[0, 0, -Math.PI / 6]}
+        scale={[0.08, 0.4, 0.08]}
+      >
         <meshStandardMaterial color="#d1d5db" />
       </Cylinder>
 
@@ -146,16 +190,28 @@ function Robot({ emotion, mousePosition }: RobotProps) {
       </Sphere>
 
       {/* Celebrating particles */}
-      {emotion === 'celebrating' && (
+      {emotion === "celebrating" && (
         <>
           <Sphere position={[0.5, 1, 0.5]} scale={[0.02, 0.02, 0.02]}>
-            <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={0.8} />
+            <meshStandardMaterial
+              color="#fbbf24"
+              emissive="#fbbf24"
+              emissiveIntensity={0.8}
+            />
           </Sphere>
           <Sphere position={[-0.5, 1.2, 0.3]} scale={[0.02, 0.02, 0.02]}>
-            <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={0.8} />
+            <meshStandardMaterial
+              color="#ec4899"
+              emissive="#ec4899"
+              emissiveIntensity={0.8}
+            />
           </Sphere>
           <Sphere position={[0.3, 1.1, -0.3]} scale={[0.02, 0.02, 0.02]}>
-            <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={0.8} />
+            <meshStandardMaterial
+              color="#06b6d4"
+              emissive="#06b6d4"
+              emissiveIntensity={0.8}
+            />
           </Sphere>
         </>
       )}
@@ -164,14 +220,20 @@ function Robot({ emotion, mousePosition }: RobotProps) {
 }
 
 interface RobotCompanionProps {
-  emotion?: 'happy' | 'excited' | 'curious' | 'thinking' | 'celebrating';
+  emotion?: "happy" | "excited" | "curious" | "thinking" | "celebrating";
   onCartAdd?: () => void;
   onProductClick?: () => void;
 }
 
-export function RobotCompanion({ emotion: externalEmotion, onCartAdd, onProductClick }: RobotCompanionProps) {
+export function RobotCompanion({
+  emotion: externalEmotion,
+  onCartAdd,
+  onProductClick,
+}: RobotCompanionProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [internalEmotion, setInternalEmotion] = useState<'happy' | 'excited' | 'curious' | 'thinking' | 'celebrating'>('happy');
+  const [internalEmotion, setInternalEmotion] = useState<
+    "happy" | "excited" | "curious" | "thinking" | "celebrating"
+  >("happy");
   const [isVisible, setIsVisible] = useState(true);
 
   // Use external emotion if provided, otherwise use internal emotion
@@ -185,37 +247,40 @@ export function RobotCompanion({ emotion: externalEmotion, onCartAdd, onProductC
       if (!externalEmotion) {
         const speed = Math.sqrt(e.movementX ** 2 + e.movementY ** 2);
         if (speed > 10) {
-          setInternalEmotion('excited');
+          setInternalEmotion("excited");
         } else if (speed > 5) {
-          setInternalEmotion('curious');
+          setInternalEmotion("curious");
         } else {
-          setInternalEmotion('happy');
+          setInternalEmotion("happy");
         }
       }
     };
 
     const handleClick = () => {
       if (!externalEmotion) {
-        setInternalEmotion('celebrating');
-        setTimeout(() => setInternalEmotion('happy'), 2000);
+        setInternalEmotion("celebrating");
+        setTimeout(() => setInternalEmotion("happy"), 2000);
       }
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('click', handleClick);
+    if (typeof window !== "undefined") {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("click", handleClick);
 
       return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('click', handleClick);
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("click", handleClick);
       };
     }
   }, [externalEmotion]);
 
   // Hide on mobile devices
   useEffect(() => {
-    if (typeof navigator !== 'undefined') {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (typeof navigator !== "undefined") {
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
       setIsVisible(!isMobile);
     }
   }, []);
@@ -223,8 +288,8 @@ export function RobotCompanion({ emotion: externalEmotion, onCartAdd, onProductC
   // Trigger emotions from parent components
   useEffect(() => {
     if (onCartAdd && !externalEmotion) {
-      setInternalEmotion('celebrating');
-      setTimeout(() => setInternalEmotion('happy'), 3000);
+      setInternalEmotion("celebrating");
+      setTimeout(() => setInternalEmotion("happy"), 3000);
     }
   }, [onCartAdd, externalEmotion]);
 
@@ -236,12 +301,16 @@ export function RobotCompanion({ emotion: externalEmotion, onCartAdd, onProductC
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1, ease: "easeOut" }}
       className="fixed bottom-4 right-4 w-32 h-32 z-50 pointer-events-none"
-      style={{ perspective: '1000px' }}
+      style={{ perspective: "1000px" }}
     >
       <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
         <ambientLight intensity={0.6} />
         <pointLight position={[10, 10, 10]} intensity={0.8} />
-        <pointLight position={[-10, -10, -10]} intensity={0.3} color="#3b82f6" />
+        <pointLight
+          position={[-10, -10, -10]}
+          intensity={0.3}
+          color="#3b82f6"
+        />
 
         <Robot emotion={currentEmotion} mousePosition={mousePosition} />
       </Canvas>
@@ -250,16 +319,16 @@ export function RobotCompanion({ emotion: externalEmotion, onCartAdd, onProductC
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{
-          opacity: currentEmotion !== 'happy' ? 1 : 0,
-          y: currentEmotion !== 'happy' ? 0 : 10
+          opacity: currentEmotion !== "happy" ? 1 : 0,
+          y: currentEmotion !== "happy" ? 0 : 10,
         }}
         className="absolute -top-8 -left-8 bg-white rounded-lg px-3 py-1 shadow-lg border"
       >
         <span className="text-xs font-medium text-neutral-700">
-          {currentEmotion === 'celebrating' && '🎉 Awesome!'}
-          {currentEmotion === 'curious' && '🤔 Interesting!'}
-          {currentEmotion === 'thinking' && '💭 Searching...'}
-          {currentEmotion === 'excited' && '⚡ So cool!'}
+          {currentEmotion === "celebrating" && "🎉 Awesome!"}
+          {currentEmotion === "curious" && "🤔 Interesting!"}
+          {currentEmotion === "thinking" && "💭 Searching..."}
+          {currentEmotion === "excited" && "⚡ So cool!"}
         </span>
       </motion.div>
     </motion.div>

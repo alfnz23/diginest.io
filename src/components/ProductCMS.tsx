@@ -2,14 +2,33 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Upload,
   Plus,
@@ -26,13 +45,17 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
 } from "lucide-react";
-import { productManager, type ProductFormData, type ProductFile } from "@/lib/productManager";
+import {
+  productManager,
+  type ProductFormData,
+  type ProductFile,
+} from "@/lib/productManager";
 import type { Product } from "@/contexts/CartContext";
 
 interface CMSProduct extends Product {
-  status: 'draft' | 'published' | 'archived';
+  status: "draft" | "published" | "archived";
   createdAt: string;
   updatedAt: string;
 }
@@ -40,74 +63,84 @@ interface CMSProduct extends Product {
 export function ProductCMS() {
   const [products, setProducts] = useState<CMSProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<CMSProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<CMSProduct | null>(
+    null,
+  );
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadProgress, setUploadProgress] = useState<{
+    [key: string]: number;
+  }>({});
 
   // Create Product Form
   const CreateProductForm = () => {
     const [formData, setFormData] = useState<ProductFormData>({
-      name: '',
-      description: '',
+      name: "",
+      description: "",
       price: 0,
-      category: '',
+      category: "",
       images: [],
       features: [],
       requirements: [],
-      tags: []
+      tags: [],
     });
     const [productFiles, setProductFiles] = useState<ProductFile[]>([]);
-    const [currentFeature, setCurrentFeature] = useState('');
-    const [currentRequirement, setCurrentRequirement] = useState('');
+    const [currentFeature, setCurrentFeature] = useState("");
+    const [currentRequirement, setCurrentRequirement] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const productFileRef = useRef<HTMLInputElement>(null);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
-      setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+      setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
     };
 
-    const handleProductFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleProductFileUpload = (
+      e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
       const files = Array.from(e.target.files || []);
-      const newProductFiles = files.map(file => ({
+      const newProductFiles = files.map((file) => ({
         name: file.name,
         file,
-        type: 'main' as const
+        type: "main" as const,
       }));
-      setProductFiles(prev => [...prev, ...newProductFiles]);
+      setProductFiles((prev) => [...prev, ...newProductFiles]);
     };
 
     const addFeature = () => {
       if (currentFeature.trim()) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          features: [...prev.features, currentFeature.trim()]
+          features: [...prev.features, currentFeature.trim()],
         }));
-        setCurrentFeature('');
+        setCurrentFeature("");
       }
     };
 
     const addRequirement = () => {
       if (currentRequirement.trim()) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          requirements: [...prev.requirements, currentRequirement.trim()]
+          requirements: [...prev.requirements, currentRequirement.trim()],
         }));
-        setCurrentRequirement('');
+        setCurrentRequirement("");
       }
     };
 
     const removeFeature = (featureToRemove: string) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        features: prev.features.filter(feature => feature !== featureToRemove)
+        features: prev.features.filter(
+          (feature) => feature !== featureToRemove,
+        ),
       }));
     };
 
     const removeRequirement = (requirementToRemove: string) => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        requirements: prev.requirements.filter(requirement => requirement !== requirementToRemove)
+        requirements: prev.requirements.filter(
+          (requirement) => requirement !== requirementToRemove,
+        ),
       }));
     };
 
@@ -116,32 +149,35 @@ export function ProductCMS() {
       setIsLoading(true);
 
       try {
-        const newProduct = await productManager.createProduct(formData, productFiles);
+        const newProduct = await productManager.createProduct(
+          formData,
+          productFiles,
+        );
 
         const cmsProduct: CMSProduct = {
           ...newProduct,
-          status: 'published',
+          status: "published",
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
 
-        setProducts(prev => [...prev, cmsProduct]);
+        setProducts((prev) => [...prev, cmsProduct]);
         setShowCreateDialog(false);
 
         // Reset form
         setFormData({
-          name: '',
-          description: '',
+          name: "",
+          description: "",
           price: 0,
-          category: '',
+          category: "",
           images: [],
           features: [],
           requirements: [],
-          tags: []
+          tags: [],
         });
         setProductFiles([]);
       } catch (error) {
-        console.error('Error creating product:', error);
+        console.error("Error creating product:", error);
       } finally {
         setIsLoading(false);
       }
@@ -156,7 +192,9 @@ export function ProductCMS() {
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               placeholder="Enter product name"
               required
             />
@@ -169,7 +207,12 @@ export function ProductCMS() {
               type="number"
               step="0.01"
               value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: Number.parseFloat(e.target.value) }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  price: Number.parseFloat(e.target.value),
+                }))
+              }
               placeholder="0.00"
               required
             />
@@ -178,7 +221,12 @@ export function ProductCMS() {
 
         <div>
           <Label htmlFor="category">Category</Label>
-          <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+          <Select
+            value={formData.category}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, category: value }))
+            }
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -198,7 +246,9 @@ export function ProductCMS() {
           <Textarea
             id="description"
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
             placeholder="Enter product description"
             rows={4}
             required
@@ -226,13 +276,18 @@ export function ProductCMS() {
               <div className="text-center">
                 <ImageIcon className="h-8 w-8 mx-auto mb-2 text-neutral-400" />
                 <span>Click to upload images</span>
-                <p className="text-sm text-neutral-500 mt-1">PNG, JPG up to 10MB each</p>
+                <p className="text-sm text-neutral-500 mt-1">
+                  PNG, JPG up to 10MB each
+                </p>
               </div>
             </Button>
             {formData.images.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mt-4">
                 {formData.images.map((file, index) => (
-                  <div key={`image-${file.name}-${index}-${file.size}`} className="relative">
+                  <div
+                    key={`image-${file.name}-${index}-${file.size}`}
+                    className="relative"
+                  >
                     <img
                       src={URL.createObjectURL(file)}
                       alt={`Upload ${index + 1}`}
@@ -243,10 +298,12 @@ export function ProductCMS() {
                       variant="destructive"
                       size="sm"
                       className="absolute top-1 right-1 h-6 w-6 p-0"
-                      onClick={() => setFormData(prev => ({
-                        ...prev,
-                        images: prev.images.filter((_, i) => i !== index)
-                      }))}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          images: prev.images.filter((_, i) => i !== index),
+                        }))
+                      }
                     >
                       ×
                     </Button>
@@ -283,13 +340,20 @@ export function ProductCMS() {
             {productFiles.length > 0 && (
               <div className="mt-4 space-y-2">
                 {productFiles.map((file, index) => (
-                  <div key={`file-${file.name}-${index}`} className="flex items-center justify-between p-2 bg-neutral-50 rounded">
+                  <div
+                    key={`file-${file.name}-${index}`}
+                    className="flex items-center justify-between p-2 bg-neutral-50 rounded"
+                  >
                     <span className="text-sm">{file.name}</span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => setProductFiles(prev => prev.filter((_, i) => i !== index))}
+                      onClick={() =>
+                        setProductFiles((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -309,7 +373,7 @@ export function ProductCMS() {
               onChange={(e) => setCurrentFeature(e.target.value)}
               placeholder="Add a feature"
               onKeyPress={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   addFeature();
                 }
@@ -321,7 +385,11 @@ export function ProductCMS() {
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.features.map((feature) => (
-              <Badge key={`feature-${feature}-${Date.now()}-${Math.random()}`} variant="secondary" className="flex items-center gap-1">
+              <Badge
+                key={`feature-${feature}-${Date.now()}-${Math.random()}`}
+                variant="secondary"
+                className="flex items-center gap-1"
+              >
                 {feature}
                 <button
                   type="button"
@@ -344,7 +412,7 @@ export function ProductCMS() {
               onChange={(e) => setCurrentRequirement(e.target.value)}
               placeholder="Add a requirement"
               onKeyPress={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   addRequirement();
                 }
@@ -356,7 +424,11 @@ export function ProductCMS() {
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.requirements.map((requirement) => (
-              <Badge key={`requirement-${requirement}-${Date.now()}-${Math.random()}`} variant="outline" className="flex items-center gap-1">
+              <Badge
+                key={`requirement-${requirement}-${Date.now()}-${Math.random()}`}
+                variant="outline"
+                className="flex items-center gap-1"
+              >
                 {requirement}
                 <button
                   type="button"
@@ -371,7 +443,11 @@ export function ProductCMS() {
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowCreateDialog(false)}
+          >
             Cancel
           </Button>
           <Button type="submit" disabled={isLoading}>
@@ -394,15 +470,15 @@ export function ProductCMS() {
 
   // Product List Component
   const ProductList = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
 
-    const filteredProducts = products.filter(product => {
+    const filteredProducts = products.filter((product) => {
       return (
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        (categoryFilter === '' || product.category === categoryFilter) &&
-        (statusFilter === '' || product.status === statusFilter)
+        (categoryFilter === "" || product.category === categoryFilter) &&
+        (statusFilter === "" || product.status === statusFilter)
       );
     });
 
@@ -448,7 +524,10 @@ export function ProductCMS() {
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={product.id}
+              className="hover:shadow-lg transition-shadow"
+            >
               <div className="aspect-square bg-neutral-100 relative overflow-hidden">
                 <img
                   src={product.image}
@@ -458,8 +537,11 @@ export function ProductCMS() {
                 <div className="absolute top-2 left-2">
                   <Badge
                     variant={
-                      product.status === 'published' ? 'default' :
-                      product.status === 'draft' ? 'secondary' : 'outline'
+                      product.status === "published"
+                        ? "default"
+                        : product.status === "draft"
+                          ? "secondary"
+                          : "outline"
                     }
                   >
                     {product.status}
@@ -468,7 +550,9 @@ export function ProductCMS() {
               </div>
               <CardHeader>
                 <CardTitle className="text-lg">{product.name}</CardTitle>
-                <CardDescription className="line-clamp-2">{product.description}</CardDescription>
+                <CardDescription className="line-clamp-2">
+                  {product.description}
+                </CardDescription>
                 <div className="flex justify-between items-center text-sm text-neutral-600">
                   <span>${product.price.toFixed(2)}</span>
                   <span>{product.category}</span>
@@ -502,7 +586,9 @@ export function ProductCMS() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Product Management</h2>
-          <p className="text-neutral-600">Manage your digital product catalog</p>
+          <p className="text-neutral-600">
+            Manage your digital product catalog
+          </p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
@@ -549,7 +635,7 @@ export function ProductCMS() {
                 </div>
                 <div className="text-center p-4 border rounded">
                   <div className="text-2xl font-bold">
-                    {products.filter(p => p.status === 'published').length}
+                    {products.filter((p) => p.status === "published").length}
                   </div>
                   <div className="text-sm text-neutral-600">Published</div>
                 </div>
@@ -568,14 +654,17 @@ export function ProductCMS() {
           <Card>
             <CardHeader>
               <CardTitle>Bulk Import</CardTitle>
-              <CardDescription>Import multiple products from CSV</CardDescription>
+              <CardDescription>
+                Import multiple products from CSV
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-4 text-neutral-400" />
                 <h3 className="text-lg font-medium mb-2">Upload CSV File</h3>
                 <p className="text-neutral-600 mb-4">
-                  Import products in bulk using a CSV file with columns: name, description, price, category, image, downloadUrl
+                  Import products in bulk using a CSV file with columns: name,
+                  description, price, category, image, downloadUrl
                 </p>
                 <Button>
                   <Upload className="h-4 w-4 mr-2" />
