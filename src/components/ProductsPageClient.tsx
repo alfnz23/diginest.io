@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +19,41 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 import { SimpleRobot } from "@/components/SimpleRobot";
 import { ClientOnlyUrlParams } from "@/components/ClientOnlyUrlParams";
+
+// Error boundary hook for handling client-side errors
+function useErrorBoundary() {
+  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Client-side error caught:', event.error);
+      setHasError(true);
+      setError(event.error);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      setHasError(true);
+      setError(new Error(event.reason));
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  const resetError = () => {
+    setHasError(false);
+    setError(null);
+  };
+
+  return { hasError, error, resetError };
+}
 
 // Mock products data
 const mockProducts: Product[] = [
@@ -540,9 +575,12 @@ const mockProducts: Product[] = [
 
 export default function ProductsPageClient() {
   const { addToCart } = useCart();
+  const { hasError, error, resetError } = useErrorBoundary();
+
   const [robotEmotion, setRobotEmotion] = useState<
     "happy" | "excited" | "curious" | "thinking" | "celebrating"
   >("happy");
+
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
     category: "",
@@ -554,143 +592,161 @@ export default function ProductsPageClient() {
     featured: false,
   });
 
+  // Safe category handler with error protection
   const handleCategoryFromUrl = (category: string) => {
-    setFilters((prev) => ({ ...prev, category }));
-    setRobotEmotion("curious");
-    if (typeof window !== "undefined") {
-      setTimeout(() => setRobotEmotion("happy"), 2000);
-    }
-  };
-
-  const handleAddToCart = (product: Product) => {
-    addToCart(product);
-    setRobotEmotion("celebrating");
-    if (typeof window !== "undefined") {
-      setTimeout(() => setRobotEmotion("happy"), 3000);
-    }
-  };
-
-  const handleSearchChange = (newFilters: SearchFilters) => {
-    setFilters(newFilters);
-    if (newFilters.query !== filters.query && newFilters.query.length > 0) {
-      setRobotEmotion("thinking");
-      if (typeof window !== "undefined") {
-        setTimeout(() => setRobotEmotion("happy"), 2000);
-      }
-    } else if (
-      newFilters.category !== filters.category &&
-      newFilters.category
-    ) {
+    try {
+      setFilters((prev) => ({ ...prev, category }));
       setRobotEmotion("curious");
       if (typeof window !== "undefined") {
         setTimeout(() => setRobotEmotion("happy"), 2000);
       }
+    } catch (err) {
+      console.error('Error handling category change:', err);
+      // Reset to default state if error occurs
+      setFilters({
+        query: "",
+        category: "",
+        priceRange: "",
+        rating: 0,
+        sortBy: "newest",
+        tags: [],
+        dateRange: "",
+        featured: false,
+      });
     }
   };
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    const filtered = mockProducts.filter((product) => {
-      // Search query filter
-      if (
-        filters.query &&
-        !product.name.toLowerCase().includes(filters.query.toLowerCase()) &&
-        !product.description.toLowerCase().includes(filters.query.toLowerCase())
-      ) {
-        return false;
-      }
-
-      // Category filter
-      if (filters.category && product.category !== filters.category) {
-        return false;
-      }
-
-      // Price range filter
-      if (filters.priceRange) {
-        const price = product.price;
-        switch (filters.priceRange) {
-          case "0-20":
-            if (price > 20) return false;
-            break;
-          case "20-50":
-            if (price < 20 || price > 50) return false;
-            break;
-          case "50-100":
-            if (price < 50 || price > 100) return false;
-            break;
-          case "100+":
-            if (price < 100) return false;
-            break;
-        }
-      }
-
-      // Rating filter
-      if (filters.rating > 0 && product.rating < filters.rating) {
-        return false;
-      }
-
-      return true;
-    });
-
-    // Sort products
-    switch (filters.sortBy) {
-      case "popular":
-        filtered.sort((a, b) => b.reviews - a.reviews);
-        break;
-      case "price-low":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        // Keep original order for newest
-        break;
+  // Safe filter handler
+  const handleSearchChange = (newFilters: SearchFilters) => {
+    try {
+      setFilters(newFilters);
+    } catch (err) {
+      console.error('Error updating filters:', err);
     }
+  };
 
-    return filtered;
+  const handleAddToCart = (product: Product) => {
+    try {
+      addToCart(product);
+      setRobotEmotion("celebrating");
+      if (typeof window !== "undefined") {
+        setTimeout(() => setRobotEmotion("happy"), 3000);
+      }
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    }
+  };
+
+  // Safe filtering with error handling
+  const filteredProducts = useMemo(() => {
+    try {
+      const filtered = mockProducts.filter((product) => {
+        // Search query filter
+        if (
+          filters.query &&
+          !product.name.toLowerCase().includes(filters.query.toLowerCase()) &&
+          !product.description.toLowerCase().includes(filters.query.toLowerCase())
+        ) {
+          return false;
+        }
+
+        // Category filter
+        if (filters.category && product.category !== filters.category) {
+          return false;
+        }
+
+        // Price range filter
+        if (filters.priceRange) {
+          const price = product.price;
+          switch (filters.priceRange) {
+            case "0-20":
+              if (price > 20) return false;
+              break;
+            case "20-50":
+              if (price < 20 || price > 50) return false;
+              break;
+            case "50-100":
+              if (price < 50 || price > 100) return false;
+              break;
+            case "100+":
+              if (price < 100) return false;
+              break;
+          }
+        }
+
+        // Rating filter
+        if (filters.rating > 0 && product.rating < filters.rating) {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Sort products
+      return filtered.sort((a, b) => {
+        switch (filters.sortBy) {
+          case "price-low":
+            return a.price - b.price;
+          case "price-high":
+            return b.price - a.price;
+          case "rating":
+            return b.rating - a.rating;
+          case "popular":
+            return b.reviews - a.reviews;
+          case "newest":
+          default:
+            return 0; // Keep original order for mock data
+        }
+      });
+    } catch (err) {
+      console.error('Error filtering products:', err);
+      return mockProducts; // Return all products as fallback
+    }
   }, [filters]);
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "ebooks":
-        return "📚";
-      case "planners":
-        return "📅";
-      case "templates":
-        return "✅";
-      case "tools":
-        return "🎨";
-      case "health":
-        return "🍎";
-      case "fitness":
-        return "💪";
-      default:
-        return "📦";
-    }
-  };
+  // Error UI component
+  if (hasError) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h2 className="text-2xl font-bold text-neutral-900 mb-4">
+          Something went wrong
+        </h2>
+        <p className="text-neutral-600 mb-6">
+          We encountered an error while loading the products. Please try again.
+        </p>
+        <div className="space-x-4">
+          <Button onClick={resetError}>
+            Try Again
+          </Button>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+        {error && (
+          <details className="mt-6 text-left bg-neutral-100 p-4 rounded">
+            <summary className="cursor-pointer font-medium">Error Details</summary>
+            <pre className="mt-2 text-sm text-neutral-700 overflow-auto">
+              {error.message}
+            </pre>
+          </details>
+        )}
+      </div>
+    );
+  }
 
-  const getCategoryName = (category: string) => {
-    switch (category) {
-      case "ebooks":
-        return "eBooks";
-      case "planners":
-        return "Planners";
-      case "templates":
-        return "Templates";
-      case "tools":
-        return "Design Tools";
-      case "health":
-        return "Health & Nutrition";
-      case "fitness":
-        return "Fitness & Training";
-      default:
-        return "Digital Products";
-    }
-  };
+  // Helper function to get category icons
+  function getCategoryIcon(category: string) {
+    const icons: Record<string, string> = {
+      ebooks: "📚",
+      planners: "📅",
+      templates: "📝",
+      tools: "🛠️",
+      health: "❤️",
+      fitness: "💪",
+    };
+    return icons[category] || "📦";
+  }
 
   return (
     <>
@@ -711,7 +767,10 @@ export default function ProductsPageClient() {
             No products found
           </h3>
           <p className="text-neutral-600 mb-4">
-            Try adjusting your search or filters
+            {filters.category
+              ? `No products found in the "${filters.category}" category. Try browsing other categories or adjusting your filters.`
+              : "Try adjusting your search or filters"
+            }
           </p>
           <Button
             variant="outline"
@@ -744,24 +803,22 @@ export default function ProductsPageClient() {
                     src={product.image}
                     alt={product.name}
                     className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      // Fallback for broken images
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                    }}
                   />
                   <div className="absolute top-4 left-4">
                     <Badge variant="secondary" className="bg-white/80">
                       {getCategoryIcon(product.category)}{" "}
-                      {getCategoryName(product.category)}
+                      {product.rating >= 4.8 ? "Bestseller" : "Popular"}
                     </Badge>
                   </div>
-                  {product.rating >= 4.8 && (
-                    <div className="absolute top-4 right-4">
-                      <Badge className="bg-neutral-900 text-white">
-                        Bestseller
-                      </Badge>
-                    </div>
-                  )}
                 </div>
               </Link>
               <CardHeader>
-                <CardTitle className="text-lg font-medium line-clamp-1">
+                <CardTitle className="text-lg font-medium line-clamp-2">
                   {product.name}
                 </CardTitle>
                 <CardDescription className="line-clamp-2">
@@ -787,13 +844,14 @@ export default function ProductsPageClient() {
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
-                  <div className="text-2xl font-light text-neutral-900">
-                    ${product.price.toFixed(2)}
-                  </div>
+                  <span className="text-2xl font-bold">${product.price}</span>
                   <Button
                     size="sm"
                     className="bg-neutral-900 hover:bg-neutral-800"
-                    onClick={() => handleAddToCart(product)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddToCart(product);
+                    }}
                   >
                     Add to Cart
                   </Button>
@@ -807,7 +865,7 @@ export default function ProductsPageClient() {
       {/* Interactive Robot Companion */}
       <SimpleRobot emotion={robotEmotion} />
 
-      {/* Client-only URL parameter handler */}
+      {/* URL Parameters Handler */}
       <ClientOnlyUrlParams onCategoryChange={handleCategoryFromUrl} />
     </>
   );
