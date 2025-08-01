@@ -27,7 +27,7 @@
         "./src/*"
       ]
     },
-    "jsxImportSource": "bippy/dist"
+    "jsxImportSource": "same-runtime/dist"
   },
   "include": [
     "**/*.ts",

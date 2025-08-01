@@ -2,7 +2,7 @@
   remote_images = ["https://source.unsplash.com/.*", "https://images.unsplash.com/.*", "https://ext.same-assets.com/.*", "https://ugc.same-assets.com/.*"]
 
 [build]
-  command = "npm install && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build"
   publish = ".next"
 
 # Next.js runtime environment
@@ -11,10 +11,11 @@
   NEXT_TELEMETRY_DISABLED = "1"
   NPM_FLAGS = "--legacy-peer-deps"
 
-# Next.js Functions
-[functions]
-  directory = ".netlify/functions"
-  node_bundler = "esbuild"
+# Static site redirects for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 # Headers for security
 [[headers]]
@@ -25,22 +26,6 @@
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Enable Next.js plugin
+# Enable Next.js plugin for serverless functions
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# Next.js routing
-[[redirects]]
-  from = "/_next/static/*"
-  to = "/.netlify/functions/nextjs/_next/static/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/nextjs/api/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/nextjs"
-  status = 200

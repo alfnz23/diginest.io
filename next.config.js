@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Dynamic deployment only - no static generation
+  // Dynamic deployment for Netlify with API routes
   trailingSlash: true,
   images: {
     unoptimized: true,
@@ -15,7 +15,6 @@ const nextConfig = {
   experimental: {
     forceSwcTransforms: true,
   },
-  // Disable static optimization completely
   staticPageGenerationTimeout: 60,
   generateBuildId: async () => {
     return 'build-' + Date.now();

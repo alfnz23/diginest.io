@@ -16,96 +16,110 @@ export interface CloudinaryUploadResult {
   bytes: number;
 }
 
-export class ImageUploadService {
-  // Upload image to Cloudinary
-  static async uploadImage(
-    fileBuffer: Buffer,
-    fileName: string,
-    folder = "diginest-products",
-  ): Promise<CloudinaryUploadResult | null> {
-    try {
-      return new Promise((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              folder,
-              public_id: fileName,
-              resource_type: "image",
-              format: "webp", // Convert to WebP for better compression
-              quality: "auto",
-              fetch_format: "auto",
-              transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
-            },
-            (error, result) => {
-              if (error) {
-                console.error("Cloudinary upload error:", error);
-                reject(error);
-              } else if (result) {
-                resolve(result as CloudinaryUploadResult);
-              } else {
-                reject(new Error("No result from Cloudinary"));
-              }
-            },
-          )
-          .end(fileBuffer);
-      });
-    } catch (error) {
-      console.error("Image upload error:", error);
-      return null;
-    }
+// Image upload functions - converted from static class
+
+// Upload image to Cloudinary
+export async function uploadImage(
+  fileBuffer: Buffer,
+  fileName: string,
+  folder = "diginest-products",
+): Promise<CloudinaryUploadResult | null> {
+  try {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder,
+            public_id: fileName.split(".")[0],
+            use_filename: true,
+            unique_filename: true,
+            overwrite: false,
+            resource_type: "image",
+            quality: "auto",
+            fetch_format: "auto",
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error:", error);
+              reject(error);
+            } else if (result) {
+              resolve({
+                secure_url: result.secure_url,
+                public_id: result.public_id,
+                width: result.width,
+                height: result.height,
+                format: result.format,
+                bytes: result.bytes,
+              });
+            } else {
+              reject(new Error("No result from Cloudinary"));
+            }
+          },
+        )
+        .end(fileBuffer);
+    });
+  } catch (error) {
+    console.error("Error uploading to Cloudinary:", error);
+    return null;
   }
+}
 
-  // Delete image from Cloudinary
-  static async deleteImage(publicId: string): Promise<boolean> {
-    try {
-      const result = await cloudinary.uploader.destroy(publicId);
-      return result.result === "ok";
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      return false;
-    }
+// Delete image from Cloudinary
+export async function deleteImage(publicId: string): Promise<boolean> {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+    return result.result === "ok";
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+    return false;
   }
+}
 
-  // Generate optimized image URL
-  static getOptimizedImageUrl(
-    publicId: string,
-    width?: number,
-    height?: number,
-    quality = "auto",
-  ): string {
-    const transformations = [`q_${quality}`, "f_auto"];
-
-    if (width) transformations.push(`w_${width}`);
-    if (height) transformations.push(`h_${height}`);
-
+// Get image transformation URL
+export function getTransformationUrl(
+  publicId: string,
+  transformations: Record<string, string | number> = {},
+): string {
+  try {
     return cloudinary.url(publicId, {
       transformation: transformations,
+      secure: true,
     });
+  } catch (error) {
+    console.error("Error generating transformation URL:", error);
+    return "";
+  }
+}
+
+// Generate signed upload parameters for client-side uploads
+export function generateUploadSignature(params: Record<string, string | number>): {
+  signature: string;
+  timestamp: number;
+  api_key: string;
+} {
+  const timestamp = Math.round(Date.now() / 1000);
+
+  const paramsWithTimestamp = {
+    ...params,
+    timestamp,
+  };
+
+  // Validate API secret is available
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  if (!apiSecret) {
+    throw new Error("Missing required environment variable: CLOUDINARY_API_SECRET");
   }
 
-  // Get image upload signature (for direct uploads from frontend)
-  static getUploadSignature(folder = "diginest-products") {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const params = {
-      timestamp,
-      folder,
-      quality: "auto",
-      fetch_format: "auto",
-    };
+  const signature = cloudinary.utils.api_sign_request(
+    paramsWithTimestamp,
+    apiSecret,
+  );
 
-    const signature = cloudinary.utils.api_sign_request(
-      params,
-      process.env.CLOUDINARY_API_SECRET!,
-    );
-
-    return {
-      signature,
-      timestamp,
-      apiKey: process.env.CLOUDINARY_API_KEY,
-      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      folder,
-    };
-  }
+  return {
+    signature,
+    timestamp,
+    api_key: process.env.CLOUDINARY_API_KEY || "",
+  };
 }
 
 export default cloudinary;

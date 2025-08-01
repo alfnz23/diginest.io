@@ -43,10 +43,23 @@ export interface ProductImage {
   created_at: string;
 }
 
-// Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Supabase client with proper environment variable validation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Validate required environment variables
+if (!supabaseUrl) {
+  throw new Error("Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL");
+}
+
+if (!supabaseAnonKey) {
+  throw new Error("Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY");
+}
+
+if (!supabaseServiceKey) {
+  throw new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
+}
 
 // Public client (for client-side operations)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -54,157 +67,181 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Admin client (for server-side operations)
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-// Database operations
-export class ProductService {
-  // Get all products
-  static async getAllProducts(): Promise<Product[]> {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+// Database operations - converted from static class to functions
 
-    if (error) {
-      console.error("Error fetching products:", error);
-      return [];
-    }
+// Get all products
+export async function getAllProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
-    return data || [];
+  if (error) {
+    console.error("Error fetching products:", error);
+    return [];
   }
 
-  // Get product by ID
-  static async getProductById(id: string): Promise<Product | null> {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("id", id)
-      .eq("is_active", true)
-      .single();
+  return data || [];
+}
 
-    if (error) {
-      console.error("Error fetching product:", error);
-      return null;
-    }
+// Get products by category
+export async function getProductsByCategory(category: string): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("category", category)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
-    return data;
+  if (error) {
+    console.error("Error fetching products by category:", error);
+    return [];
   }
 
-  // Get products by category
-  static async getProductsByCategory(category: string): Promise<Product[]> {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("category", category)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+  return data || [];
+}
 
-    if (error) {
-      console.error("Error fetching products by category:", error);
-      return [];
-    }
+// Get single product by ID
+export async function getProductById(id: string): Promise<Product | null> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .eq("is_active", true)
+    .single();
 
-    return data || [];
+  if (error) {
+    console.error("Error fetching product:", error);
+    return null;
   }
 
-  // Get product reviews
-  static async getProductReviews(productId: string): Promise<ProductReview[]> {
-    const { data, error } = await supabase
-      .from("product_reviews")
-      .select("*")
-      .eq("product_id", productId)
-      .order("created_at", { ascending: false });
+  return data;
+}
 
-    if (error) {
-      console.error("Error fetching reviews:", error);
-      return [];
-    }
+// Search products
+export async function searchProducts(query: string): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
 
-    return data || [];
+  if (error) {
+    console.error("Error searching products:", error);
+    return [];
   }
 
-  // Get product images
-  static async getProductImages(productId: string): Promise<ProductImage[]> {
-    const { data, error } = await supabase
-      .from("product_images")
-      .select("*")
-      .eq("product_id", productId)
-      .order("sort_order", { ascending: true });
+  return data || [];
+}
 
-    if (error) {
-      console.error("Error fetching product images:", error);
-      return [];
-    }
+// Admin functions using service role client
 
-    return data || [];
+// Create new product (admin only)
+export async function createProduct(productData: Omit<Product, "id" | "created_at" | "updated_at">): Promise<Product | null> {
+  const { data, error } = await supabaseAdmin
+    .from("products")
+    .insert([productData])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating product:", error);
+    throw new Error(`Failed to create product: ${error.message}`);
   }
 
-  // Admin operations
-  static async createProduct(
-    product: Omit<Product, "id" | "created_at" | "updated_at">,
-  ): Promise<Product | null> {
-    const { data, error } = await supabaseAdmin
-      .from("products")
-      .insert([product])
-      .select()
-      .single();
+  return data;
+}
 
-    if (error) {
-      console.error("Error creating product:", error);
-      return null;
-    }
+// Update product (admin only)
+export async function updateProduct(id: string, productData: Partial<Product>): Promise<Product | null> {
+  const { data, error } = await supabaseAdmin
+    .from("products")
+    .update({ ...productData, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
 
-    return data;
+  if (error) {
+    console.error("Error updating product:", error);
+    throw new Error(`Failed to update product: ${error.message}`);
   }
 
-  static async updateProduct(
-    id: string,
-    updates: Partial<Product>,
-  ): Promise<Product | null> {
-    const { data, error } = await supabaseAdmin
-      .from("products")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select()
-      .single();
+  return data;
+}
 
-    if (error) {
-      console.error("Error updating product:", error);
-      return null;
-    }
+// Delete product (admin only)
+export async function deleteProduct(id: string): Promise<boolean> {
+  const { error } = await supabaseAdmin
+    .from("products")
+    .delete()
+    .eq("id", id);
 
-    return data;
+  if (error) {
+    console.error("Error deleting product:", error);
+    throw new Error(`Failed to delete product: ${error.message}`);
   }
 
-  static async deleteProduct(id: string): Promise<boolean> {
-    const { error } = await supabaseAdmin
-      .from("products")
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq("id", id);
+  return true;
+}
 
-    if (error) {
-      console.error("Error deleting product:", error);
-      return false;
-    }
+// Get all products for admin (includes inactive)
+export async function getAllProductsForAdmin(): Promise<Product[]> {
+  const { data, error } = await supabaseAdmin
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    return true;
+  if (error) {
+    console.error("Error fetching all products:", error);
+    return [];
   }
 
-  // Search products
-  static async searchProducts(query: string): Promise<Product[]> {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
+  return data || [];
+}
 
-    if (error) {
-      console.error("Error searching products:", error);
-      return [];
-    }
+// Toggle product active status
+export async function toggleProductStatus(id: string, isActive: boolean): Promise<Product | null> {
+  const { data, error } = await supabaseAdmin
+    .from("products")
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
 
-    return data || [];
+  if (error) {
+    console.error("Error toggling product status:", error);
+    throw new Error(`Failed to toggle product status: ${error.message}`);
   }
+
+  return data;
+}
+
+// Get product statistics
+export async function getProductStats(): Promise<{
+  totalProducts: number;
+  activeProducts: number;
+  totalRevenue: number;
+  averageRating: number;
+}> {
+  const { data: products, error } = await supabaseAdmin
+    .from("products")
+    .select("price, rating, reviews_count, is_active");
+
+  if (error) {
+    console.error("Error fetching product stats:", error);
+    return { totalProducts: 0, activeProducts: 0, totalRevenue: 0, averageRating: 0 };
+  }
+
+  const totalProducts = products?.length || 0;
+  const activeProducts = products?.filter(p => p.is_active).length || 0;
+  const totalRevenue = products?.reduce((sum, p) => sum + (p.price * p.reviews_count), 0) || 0;
+  const averageRating = products?.length > 0
+    ? products.reduce((sum, p) => sum + p.rating, 0) / products.length
+    : 0;
+
+  return { totalProducts, activeProducts, totalRevenue, averageRating };
 }
 
 // Database setup SQL (run this in Supabase SQL editor)

@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ProductService } from "@/lib/database";
-import { ImageUploadService } from "@/lib/cloudinary";
+import { getAllProductsForAdmin, createProduct } from "@/lib/database";
 
 // Verify admin authentication
 function verifyAdmin(request: NextRequest): boolean {
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const products = await ProductService.getAllProducts();
+    const products = await getAllProductsForAdmin();
     return NextResponse.json({ products });
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -78,7 +77,7 @@ export async function POST(request: NextRequest) {
       meta_data: meta_data || {},
     };
 
-    const newProduct = await ProductService.createProduct(productData);
+    const newProduct = await createProduct(productData);
 
     if (!newProduct) {
       return NextResponse.json(

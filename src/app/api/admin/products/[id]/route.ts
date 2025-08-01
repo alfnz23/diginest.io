@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ProductService } from "@/lib/database";
+import { getProductById, updateProduct, deleteProduct } from "@/lib/database";
 
 // Verify admin authentication
 function verifyAdmin(request: NextRequest): boolean {
@@ -24,7 +24,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const product = await ProductService.getProductById(id);
+    const product = await getProductById(id);
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
@@ -61,7 +61,7 @@ export async function PUT(
       updateData.price = Number.parseFloat(updateData.price);
     }
 
-    const updatedProduct = await ProductService.updateProduct(id, updateData);
+    const updatedProduct = await updateProduct(id, updateData);
 
     if (!updatedProduct) {
       return NextResponse.json(
@@ -91,7 +91,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const success = await ProductService.deleteProduct(id);
+    const success = await deleteProduct(id);
 
     if (!success) {
       return NextResponse.json(

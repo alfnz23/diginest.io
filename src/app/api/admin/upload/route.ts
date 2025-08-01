@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ImageUploadService } from "@/lib/cloudinary";
+import { uploadImage, deleteImage } from "@/lib/cloudinary";
 
 // Verify admin authentication
 function verifyAdmin(request: NextRequest): boolean {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const fileName = `product-${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "")}`;
 
     // Upload to Cloudinary
-    const uploadResult = await ImageUploadService.uploadImage(
+    const uploadResult = await uploadImage(
       buffer,
       fileName,
       folder,
@@ -97,7 +97,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const success = await ImageUploadService.deleteImage(publicId);
+    const success = await deleteImage(publicId);
 
     if (!success) {
       return NextResponse.json({ error: "Delete failed" }, { status: 500 });
