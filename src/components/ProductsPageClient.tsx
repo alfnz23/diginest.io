@@ -507,23 +507,31 @@ export default function ProductsPageClient() {
   const handleCategoryFromUrl = (category: string) => {
     setFilters(prev => ({ ...prev, category }));
     setRobotEmotion('curious');
-    setTimeout(() => setRobotEmotion('happy'), 2000);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => setRobotEmotion('happy'), 2000);
+    }
   };
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
     setRobotEmotion('celebrating');
-    setTimeout(() => setRobotEmotion('happy'), 3000);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => setRobotEmotion('happy'), 3000);
+    }
   };
 
   const handleSearchChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
     if (newFilters.query !== filters.query && newFilters.query.length > 0) {
       setRobotEmotion('thinking');
-      setTimeout(() => setRobotEmotion('happy'), 2000);
+      if (typeof window !== 'undefined') {
+        setTimeout(() => setRobotEmotion('happy'), 2000);
+      }
     } else if (newFilters.category !== filters.category && newFilters.category) {
       setRobotEmotion('curious');
-      setTimeout(() => setRobotEmotion('happy'), 2000);
+      if (typeof window !== 'undefined') {
+        setTimeout(() => setRobotEmotion('happy'), 2000);
+      }
     }
   };
 

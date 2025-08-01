@@ -136,19 +136,21 @@ export function PaymentCashout() {
     setIsPayoutDialogOpen(false);
 
     // Simulate processing
-    setTimeout(() => {
-      setTransactions(prev =>
-        prev.map(txn =>
-          txn.id === newTransaction.id
-            ? { ...txn, status: 'completed' as const }
-            : txn
-        )
-      );
-      setBalance(prev => ({
-        ...prev,
-        pending: prev.pending - amount
-      }));
-    }, 3000);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        setTransactions(prev =>
+          prev.map(txn =>
+            txn.id === newTransaction.id
+              ? { ...txn, status: 'completed' as const }
+              : txn
+          )
+        );
+        setBalance(prev => ({
+          ...prev,
+          pending: prev.pending - amount
+        }));
+      }, 3000);
+    }
   };
 
   const getStatusIcon = (status: string) => {

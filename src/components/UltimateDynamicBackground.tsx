@@ -23,9 +23,11 @@ export function UltimateDynamicBackground({
   // Performance optimization - detect device capabilities
   useEffect(() => {
     const checkPerformance = () => {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
-      setIsVisible(!isMobile && !isLowEnd);
+      if (typeof navigator !== 'undefined') {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+        setIsVisible(!isMobile && !isLowEnd);
+      }
     };
 
     checkPerformance();
@@ -33,7 +35,7 @@ export function UltimateDynamicBackground({
 
   // Mouse tracking for interactive effects
   useEffect(() => {
-    if (!interactive) return;
+    if (!interactive || typeof window === 'undefined') return;
 
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({

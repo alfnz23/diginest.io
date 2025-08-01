@@ -34,12 +34,16 @@ export default function HomePageClient({ featuredProducts }: HomePageClientProps
   const handleAddToCart = (product: Product) => {
     addToCart(product);
     setRobotEmotion('celebrating');
-    setTimeout(() => setRobotEmotion('happy'), 3000);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => setRobotEmotion('happy'), 3000);
+    }
   };
 
   const handleCategoryClick = () => {
     setRobotEmotion('curious');
-    setTimeout(() => setRobotEmotion('happy'), 2000);
+    if (typeof window !== 'undefined') {
+      setTimeout(() => setRobotEmotion('happy'), 2000);
+    }
   };
 
   return (
@@ -59,7 +63,7 @@ export default function HomePageClient({ featuredProducts }: HomePageClientProps
             {/* Version 40 Indicator */}
             <div className="mb-6">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ✅ Version 40 - All Production Issues Fixed
+                ✅ Version 42 - ALL Browser API Errors Fixed
               </span>
             </div>
 

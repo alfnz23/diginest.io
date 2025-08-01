@@ -32,8 +32,8 @@ function ParticleField({ count, mousePosition }: ParticleFieldProps) {
   useFrame((state) => {
     if (!pointsRef.current) return;
 
-    const mouseX = (mousePosition.x / window.innerWidth) * 2 - 1;
-    const mouseY = -(mousePosition.y / window.innerHeight) * 2 + 1;
+    const mouseX = typeof window !== 'undefined' ? (mousePosition.x / window.innerWidth) * 2 - 1 : 0;
+    const mouseY = typeof window !== 'undefined' ? -(mousePosition.y / window.innerHeight) * 2 + 1 : 0;
 
     // Update particle positions
     for (let i = 0; i < count * 3; i += 3) {

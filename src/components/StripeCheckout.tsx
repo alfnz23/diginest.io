@@ -100,7 +100,7 @@ export function StripeCheckout() {
         // Create Stripe checkout session
         const session = await stripeService.createCheckoutSession(cartItems, customerInfo);
 
-        if (session.url) {
+        if (session.url && typeof window !== 'undefined') {
           window.location.href = session.url;
         } else {
           throw new Error('No checkout URL received');

@@ -13,17 +13,21 @@ export function SimpleRobot({ emotion = 'happy' }: SimpleRobotProps) {
 
   useEffect(() => {
     // Hide on mobile for better performance
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    setIsVisible(!isMobile);
+    if (typeof navigator !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsVisible(!isMobile);
+    }
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
+    if (typeof window !== 'undefined') {
+      const handleMouseMove = (e: MouseEvent) => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+      };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }
   }, []);
 
   if (!isVisible) return null;
@@ -33,8 +37,8 @@ export function SimpleRobot({ emotion = 'happy' }: SimpleRobotProps) {
   const robotY = Math.min(Math.max(mousePosition.y * 0.1, 20), 100);
 
   // Eye positions based on mouse
-  const eyeX = (mousePosition.x / window.innerWidth - 0.5) * 6;
-  const eyeY = (mousePosition.y / window.innerHeight - 0.5) * 6;
+  const eyeX = typeof window !== 'undefined' ? (mousePosition.x / window.innerWidth - 0.5) * 6 : 0;
+  const eyeY = typeof window !== 'undefined' ? (mousePosition.y / window.innerHeight - 0.5) * 6 : 0;
 
   const getEyeColor = () => {
     switch (emotion) {

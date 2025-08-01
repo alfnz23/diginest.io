@@ -39,6 +39,8 @@ export function ShoppingCart() {
     setIsCheckingOut(true);
 
     try {
+      if (typeof window === 'undefined') return;
+
       const checkoutData = {
         cartItems: items,
         customerEmail: customerInfo.email,
@@ -70,7 +72,7 @@ export function ShoppingCart() {
 
   // Trigger abandoned cart email when user closes cart with items
   const handleCartClose = () => {
-    if (items.length > 0 && user) {
+    if (items.length > 0 && user && typeof window !== 'undefined') {
       // Trigger abandoned cart email after 2 hours
       setTimeout(() => {
         triggerAbandonedCart(user.id, items, total);

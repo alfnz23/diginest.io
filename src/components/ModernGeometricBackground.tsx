@@ -12,8 +12,10 @@ export function ModernGeometricBackground({ variant = 'elegant' }: ModernGeometr
 
   useEffect(() => {
     // Hide on mobile for better performance
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    setIsVisible(!isMobile);
+    if (typeof navigator !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsVisible(!isMobile);
+    }
   }, []);
 
   if (!isVisible) return null;

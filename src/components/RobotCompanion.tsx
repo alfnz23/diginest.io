@@ -201,19 +201,23 @@ export function RobotCompanion({ emotion: externalEmotion, onCartAdd, onProductC
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('click', handleClick);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('click', handleClick);
 
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('click', handleClick);
-    };
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('click', handleClick);
+      };
+    }
   }, [externalEmotion]);
 
   // Hide on mobile devices
   useEffect(() => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    setIsVisible(!isMobile);
+    if (typeof navigator !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsVisible(!isMobile);
+    }
   }, []);
 
   // Trigger emotions from parent components
