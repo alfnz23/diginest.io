@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +18,6 @@ import { useCart, type Product } from "@/contexts/CartContext";
 import { Star } from "lucide-react";
 import Link from "next/link";
 import { SimpleRobot } from "@/components/SimpleRobot";
-import { ClientOnlyUrlParams } from "@/components/ClientOnlyUrlParams";
 
 // Error boundary hook for handling client-side errors
 function useErrorBoundary() {
@@ -38,19 +37,21 @@ function useErrorBoundary() {
       setError(new Error(event.reason));
     };
 
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('error', handleError);
+      window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
-    return () => {
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
+      return () => {
+        window.removeEventListener('error', handleError);
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      };
+    }
   }, []);
 
-  const resetError = () => {
+  const resetError = useCallback(() => {
     setHasError(false);
     setError(null);
-  };
+  }, []);
 
   return { hasError, error, resetError };
 }
@@ -573,7 +574,11 @@ const mockProducts: Product[] = [
   },
 ];
 
-export default function ProductsPageClient() {
+interface ProductsPageClientProps {
+  initialCategory?: string;
+}
+
+export default function ProductsPageClient({ initialCategory = '' }: ProductsPageClientProps) {
   const { addToCart } = useCart();
   const { hasError, error, resetError } = useErrorBoundary();
 
@@ -583,7 +588,7 @@ export default function ProductsPageClient() {
 
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
-    category: "",
+    category: initialCategory,
     priceRange: "",
     rating: 0,
     sortBy: "newest",
@@ -592,50 +597,35 @@ export default function ProductsPageClient() {
     featured: false,
   });
 
-  // Safe category handler with error protection
-  const handleCategoryFromUrl = (category: string) => {
-    try {
-      setFilters((prev) => ({ ...prev, category }));
+  // Update filters when initialCategory changes
+  useEffect(() => {
+    if (initialCategory && initialCategory !== filters.category) {
+      setFilters(prev => ({ ...prev, category: initialCategory }));
       setRobotEmotion("curious");
-      if (typeof window !== "undefined") {
-        setTimeout(() => setRobotEmotion("happy"), 2000);
-      }
-    } catch (err) {
-      console.error('Error handling category change:', err);
-      // Reset to default state if error occurs
-      setFilters({
-        query: "",
-        category: "",
-        priceRange: "",
-        rating: 0,
-        sortBy: "newest",
-        tags: [],
-        dateRange: "",
-        featured: false,
-      });
+      const timer = setTimeout(() => setRobotEmotion("happy"), 2000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [initialCategory, filters.category]);
 
   // Safe filter handler
-  const handleSearchChange = (newFilters: SearchFilters) => {
+  const handleSearchChange = useCallback((newFilters: SearchFilters) => {
     try {
       setFilters(newFilters);
     } catch (err) {
       console.error('Error updating filters:', err);
     }
-  };
+  }, []);
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = useCallback((product: Product) => {
     try {
       addToCart(product);
       setRobotEmotion("celebrating");
-      if (typeof window !== "undefined") {
-        setTimeout(() => setRobotEmotion("happy"), 3000);
-      }
+      const timer = setTimeout(() => setRobotEmotion("happy"), 3000);
+      return () => clearTimeout(timer);
     } catch (err) {
       console.error('Error adding to cart:', err);
     }
-  };
+  }, [addToCart]);
 
   // Safe filtering with error handling
   const filteredProducts = useMemo(() => {
@@ -719,7 +709,11 @@ export default function ProductsPageClient() {
           <Button onClick={resetError}>
             Try Again
           </Button>
-          <Button variant="outline" onClick={() => window.location.reload()}>
+          <Button variant="outline" onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.location.reload();
+            }
+          }}>
             Refresh Page
           </Button>
         </div>
@@ -733,19 +727,6 @@ export default function ProductsPageClient() {
         )}
       </div>
     );
-  }
-
-  // Helper function to get category icons
-  function getCategoryIcon(category: string) {
-    const icons: Record<string, string> = {
-      ebooks: "📚",
-      planners: "📅",
-      templates: "📝",
-      tools: "🛠️",
-      health: "❤️",
-      fitness: "💪",
-    };
-    return icons[category] || "📦";
   }
 
   return (
@@ -864,9 +845,19 @@ export default function ProductsPageClient() {
 
       {/* Interactive Robot Companion */}
       <SimpleRobot emotion={robotEmotion} />
-
-      {/* URL Parameters Handler */}
-      <ClientOnlyUrlParams onCategoryChange={handleCategoryFromUrl} />
     </>
   );
+}
+
+// Helper function to get category icons
+function getCategoryIcon(category: string) {
+  const icons: Record<string, string> = {
+    ebooks: "📚",
+    planners: "📅",
+    templates: "📝",
+    tools: "🛠️",
+    health: "❤️",
+    fitness: "💪",
+  };
+  return icons[category] || "📦";
 }

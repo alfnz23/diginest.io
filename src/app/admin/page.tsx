@@ -48,6 +48,8 @@ import {
   Package,
   Users,
   TrendingUp,
+  Palette,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -364,9 +366,10 @@ export default function AdminPage() {
         )}
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="database">Database Setup</TabsTrigger>
           </TabsList>
 
@@ -639,6 +642,103 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret`}</pre>
                     Once configured, this admin panel will be fully functional
                     with database storage and cloud image uploads.
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Branding Tab */}
+          <TabsContent value="branding" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Brand Customization</CardTitle>
+                <CardDescription>
+                  Customize your store's branding, categories, and business identity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Quick Templates */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Business Templates</h4>
+                    <div className="space-y-3">
+                      {[
+                        { name: "Creative & Design", desc: "Graphics, fonts, design tools", color: "bg-purple-100 text-purple-800" },
+                        { name: "Education & Learning", desc: "Courses, ebooks, guides", color: "bg-green-100 text-green-800" },
+                        { name: "Business & Professional", desc: "Templates, contracts, tools", color: "bg-red-100 text-red-800" },
+                        { name: "Lifestyle & Wellness", desc: "Fitness, nutrition, wellness", color: "bg-orange-100 text-orange-800" }
+                      ].map((template, i) => (
+                        <div key={i} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{template.name}</div>
+                              <div className="text-sm text-gray-600">{template.desc}</div>
+                            </div>
+                            <Badge className={template.color}>Apply</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Current Settings */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Current Settings</h4>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="font-medium text-blue-900">DigiNest.io</div>
+                        <div className="text-sm text-blue-700">Premium Digital Products for Modern Productivity</div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium">Product Categories:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {["eBooks", "Planners", "Templates", "Design Tools", "Health", "Fitness"].map((cat) => (
+                            <Badge key={cat} variant="outline">{cat}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex gap-4">
+                  <Link href="/admin/branding" target="_blank" className="flex-1">
+                    <Button className="w-full" size="lg">
+                      <Palette className="h-4 w-4 mr-2" />
+                      Open Brand Studio
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="lg" className="flex-1">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Settings
+                  </Button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-500 rounded-lg text-white">
+                      <Palette className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-900">Brand Customization Studio</h4>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Use our comprehensive branding studio to customize your store's identity,
+                        product categories, color scheme, and business messaging. Perfect for
+                        tailoring your platform to any industry or niche.
+                      </p>
+                      <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                        <li>• Choose from business templates (Creative, Education, Business, Wellness)</li>
+                        <li>• Customize brand name, tagline, and descriptions</li>
+                        <li>• Create custom product categories with icons</li>
+                        <li>• Design your color theme and visual identity</li>
+                        <li>• Preview changes before applying</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
