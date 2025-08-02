@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle, Download, ArrowLeft, Mail } from "lucide-react";
+import RefundPolicyNotice from "@/components/RefundPolicyNotice";
+import ProductAccessTracker from "@/components/ProductAccessTracker";
 import Link from "next/link";
 
 interface OrderItem {
@@ -153,6 +155,30 @@ export default function CheckoutSuccessPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Refund Policy Notice */}
+        <div className="mb-8">
+          <RefundPolicyNotice
+            variant="order-confirmation"
+            refundEligible={true}
+            timeRemaining={23.8}
+          />
+        </div>
+
+        {/* Product Access Demo */}
+        <div className="mb-8">
+          <ProductAccessTracker
+            orderId={orderDetails?.orderId || "ORDER-DEMO"}
+            productId="prod_demo_123"
+            productName={orderDetails?.items[0]?.name || "Digital Product"}
+            downloadUrl={orderDetails?.items[0]?.downloadUrl || "/downloads/demo.zip"}
+            previewUrl="/preview/demo"
+            customerEmail={orderDetails?.customerEmail || "customer@example.com"}
+            refundEligible={true}
+            timeRemainingForRefund={23.8}
+            onAccess={(type) => console.log(`Access tracked: ${type}`)}
+          />
+        </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

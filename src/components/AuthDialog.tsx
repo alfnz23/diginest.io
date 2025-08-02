@@ -40,7 +40,7 @@ export function AuthDialog() {
         setLoginData({ email: "", password: "" });
       } else {
         setError(
-          "Invalid email or password. Try: admin@diginest.io / password123",
+          "Invalid email or password. Try: customer@example.com / password123",
         );
       }
     } catch (error) {
@@ -156,7 +156,7 @@ export function AuthDialog() {
             </form>
 
             <div className="text-center text-sm text-neutral-600">
-              Demo credentials: admin@diginest.io / password123
+              Demo credentials: customer@example.com / password123
             </div>
           </TabsContent>
 

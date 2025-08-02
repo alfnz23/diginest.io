@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import RefundPolicyNotice from "@/components/RefundPolicyNotice";
 import Link from "next/link";
 
 export const metadata = {
@@ -76,20 +77,91 @@ export default function TermsOfService() {
                   We do not store your payment information on our servers.
                 </p>
 
-                <h3 className="text-xl font-medium">3.2 Refund Policy</h3>
+                <h3 className="text-xl font-medium">3.2 Digital Product Refund Policy</h3>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 my-4">
+                  <p className="font-medium text-orange-900 mb-2">
+                    IMPORTANT: Refunds are only available for digital products that have NOT been downloaded or accessed.
+                  </p>
+                  <p className="text-orange-800 text-sm">
+                    Once you download, access, or use any digital product, refunds are no longer possible due to the nature of digital goods.
+                  </p>
+                </div>
+
+                <h4 className="text-lg font-medium">3.2.1 Refund Eligibility</h4>
                 <p>
-                  Due to the digital nature of our products, all sales are
-                  final. However, we may provide refunds in cases of:
+                  Refunds are available under the following conditions:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Technical issues preventing download</li>
-                  <li>Significant product misrepresentation</li>
-                  <li>Duplicate purchases</li>
+                  <li><strong>Before Access:</strong> The digital product has not been downloaded, accessed, or used</li>
+                  <li><strong>Time Window:</strong> Request must be made within 24 hours of purchase</li>
+                  <li><strong>Valid Reason:</strong> Must provide a legitimate reason from our approved list</li>
+                  <li><strong>Original Payment Method:</strong> Refunds are processed to the original payment method only</li>
                 </ul>
+
+                <h4 className="text-lg font-medium">3.2.2 Automatic Access Tracking</h4>
                 <p>
-                  Refund requests must be submitted within 7 days of purchase to
-                  support@diginest.io.
+                  Our system automatically tracks when digital products are downloaded or accessed to ensure fair application of this policy. This includes:
                 </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Download button clicks and file transfers</li>
+                  <li>Online access and viewing of digital content</li>
+                  <li>API calls and automated access attempts</li>
+                  <li>Timestamp logging for all access events</li>
+                </ul>
+
+                <h4 className="text-lg font-medium">3.2.3 Refund Process</h4>
+                <ol className="list-decimal pl-6 space-y-2">
+                  <li>Submit refund request through your account or contact support</li>
+                  <li>Our system automatically verifies eligibility</li>
+                  <li>Eligible requests are processed within 3-5 business days</li>
+                  <li>Refunds are issued to the original payment method</li>
+                  <li>Access to the digital product is permanently revoked</li>
+                </ol>
+
+                <h4 className="text-lg font-medium">3.2.4 Exceptions and Special Cases</h4>
+                <p>
+                  Limited exceptions may be made for:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Technical issues preventing download within 24 hours</li>
+                  <li>Significant product misrepresentation</li>
+                  <li>Duplicate purchases (automatic)</li>
+                  <li>Payment processing errors</li>
+                </ul>
+
+                <h4 className="text-lg font-medium">3.2.5 Preview and Demo Content</h4>
+                <p>
+                  To help you make informed purchase decisions:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Product previews are available and do not affect refund eligibility</li>
+                  <li>Detailed product descriptions and specifications are provided</li>
+                  <li>Customer reviews and ratings are displayed</li>
+                  <li>Sample content may be available for certain products</li>
+                </ul>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 my-4">
+                  <p className="text-blue-900 text-sm">
+                    <strong>By completing a purchase, you acknowledge that:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-1 text-blue-800 text-sm mt-2">
+                    <li>You have read and understand this refund policy</li>
+                    <li>Refunds are only available before downloading or accessing products</li>
+                    <li>Your access will be tracked automatically</li>
+                    <li>You have reviewed available previews and product information</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <Separator />
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">
+                3.3 Comprehensive Refund Policy
+              </h2>
+              <div className="my-6">
+                <RefundPolicyNotice variant="full-policy" />
               </div>
             </section>
 

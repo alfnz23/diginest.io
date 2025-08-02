@@ -3,6 +3,7 @@
 import { StripeCheckout } from "@/components/StripeCheckout";
 import { ShoppingCartTrigger } from "@/components/ShoppingCart";
 import { UserMenu } from "@/components/AuthDialog";
+import RefundPolicyNotice from "@/components/RefundPolicyNotice";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -44,6 +45,11 @@ export default function CheckoutPage() {
           </p>
         </div>
 
+        {/* Refund Policy Notice */}
+        <div className="mb-8">
+          <RefundPolicyNotice variant="checkout" />
+        </div>
+
         {/* Checkout Component */}
         <StripeCheckout />
 
@@ -75,14 +81,14 @@ export default function CheckoutPage() {
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-purple-600 text-xl">💯</span>
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-orange-600 text-xl">🔒</span>
               </div>
               <h3 className="font-medium text-neutral-900 mb-1">
-                Money Back Guarantee
+                Refund Policy
               </h3>
               <p className="text-sm text-neutral-600">
-                30-day refund policy on all products
+                Refunds available before download/access
               </p>
             </div>
           </div>

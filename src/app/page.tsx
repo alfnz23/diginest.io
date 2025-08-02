@@ -8,13 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCartTrigger } from "@/components/ShoppingCart";
-import { UserMenu } from "@/components/AuthDialog";
+import { NavigationLinks } from "@/components/NavigationLinks";
 import {
   EmailNewsletter,
   FooterNewsletter,
 } from "@/components/EmailNewsletter";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
 import {
   ChevronRight,
   Star,
@@ -122,33 +121,7 @@ export default function HomePage() {
               </h1>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <Link
-                href="/products"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                Products
-              </Link>
-              <Link
-                href="#categories"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                Categories
-              </Link>
-              <Link
-                href="#about"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                About
-              </Link>
-              <Link
-                href="/admin"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                Admin
-              </Link>
-              <LanguageSwitcher variant="compact" />
-              <ShoppingCartTrigger />
-              <UserMenu />
+              <NavigationLinks />
             </div>
           </div>
         </div>

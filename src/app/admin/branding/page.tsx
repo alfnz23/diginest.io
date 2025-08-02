@@ -1,5 +1,10 @@
 import BrandingCustomizer from "@/components/BrandingCustomizer";
+import { AdminProtection } from "@/components/AdminProtection";
 
 export default function BrandingPage() {
-  return <BrandingCustomizer />;
+  return (
+    <AdminProtection>
+      <BrandingCustomizer />
+    </AdminProtection>
+  );
 }
