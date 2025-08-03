@@ -29,8 +29,13 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File;
     const folder = (formData.get("folder") as string) || "diginest-products";
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!file || !file.size) {
+      return NextResponse.json({ error: "No file provided or file is empty" }, { status: 400 });
+    }
+
+    // Additional safety check for file properties
+    if (typeof file !== 'object' || !file.type) {
+      return NextResponse.json({ error: "Invalid file format" }, { status: 400 });
     }
 
     // Validate file type
@@ -55,9 +60,11 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Generate unique filename
+    // Generate unique filename with null safety
     const timestamp = Date.now();
-    const fileName = `product-${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "")}`;
+    const originalName = file.name || "upload";
+    const safeName = originalName.replace(/[^a-zA-Z0-9.-]/g, "");
+    const fileName = `product-${timestamp}-${safeName || "image"}`;
 
     // Upload to Cloudinary
     const uploadResult = await uploadImage(

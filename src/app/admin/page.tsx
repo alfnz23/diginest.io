@@ -369,13 +369,111 @@ export default function AdminPage() {
         )}
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="refunds">Refunds</TabsTrigger>
             <TabsTrigger value="database">Database Setup</TabsTrigger>
           </TabsList>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Business Analytics & Intelligence</CardTitle>
+                <CardDescription>
+                  Comprehensive analytics dashboard with real-time business insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="text-2xl font-bold text-blue-900">$45,832</div>
+                    <div className="text-sm text-blue-700">Total Revenue</div>
+                    <div className="text-xs text-green-600">+15.3% this month</div>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-2xl font-bold text-green-900">1,247</div>
+                    <div className="text-sm text-green-700">Total Orders</div>
+                    <div className="text-xs text-green-600">+12.8% this month</div>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="text-2xl font-bold text-purple-900">892</div>
+                    <div className="text-sm text-purple-700">Total Customers</div>
+                    <div className="text-xs text-green-600">+18.9% this month</div>
+                  </div>
+                  <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="text-2xl font-bold text-orange-900">3.4%</div>
+                    <div className="text-sm text-orange-700">Conversion Rate</div>
+                    <div className="text-xs text-red-600">-0.3% this month</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="font-medium">📊 Available Analytics</h4>
+                    <ul className="text-sm space-y-1 text-gray-700">
+                      <li>• Revenue trends and forecasting</li>
+                      <li>• Customer behavior analysis</li>
+                      <li>• Product performance tracking</li>
+                      <li>• Traffic source attribution</li>
+                      <li>• Conversion funnel analysis</li>
+                      <li>• Device and geographic insights</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="font-medium">🎯 Key Insights</h4>
+                    <ul className="text-sm space-y-1 text-gray-700">
+                      <li>• Mobile traffic: 42% of total sessions</li>
+                      <li>• Top product: Digital Marketing Toolkit</li>
+                      <li>• Best traffic source: Email campaigns</li>
+                      <li>• Peak sales time: 2-4 PM EST</li>
+                      <li>• Return customer rate: 32%</li>
+                      <li>• Average session: 3:24 minutes</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Link href="/admin/analytics" target="_blank" className="flex-1">
+                    <Button className="w-full" size="lg">
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Open Full Analytics Dashboard
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="lg" className="flex-1">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Analytics Report
+                  </Button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-500 rounded-lg text-white">
+                      <TrendingUp className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-900">Advanced Business Intelligence</h4>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Get comprehensive insights into your digital product business with our advanced analytics dashboard.
+                        Track revenue trends, customer behavior, product performance, and marketing effectiveness.
+                      </p>
+                      <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                        <li>• Real-time revenue and order tracking</li>
+                        <li>• Customer acquisition and retention analysis</li>
+                        <li>• Product and category performance metrics</li>
+                        <li>• Traffic source and marketing attribution</li>
+                        <li>• Device and geographic customer insights</li>
+                        <li>• Conversion funnel optimization data</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">

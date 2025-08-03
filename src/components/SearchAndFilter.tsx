@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import EnhancedSearch from "@/components/EnhancedSearch";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -85,14 +86,19 @@ export function SearchAndFilter({
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
+      {/* Enhanced Search Bar */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
-        <Input
+        <EnhancedSearch
           placeholder={t("products.search")}
-          value={filters.query}
-          onChange={(e) => updateFilter("query", e.target.value)}
-          className="pl-10 pr-4"
+          onSearch={(query) => updateFilter("query", query)}
+          onProductSelect={(product) => {
+            // You can implement product selection logic here
+            console.log("Selected product:", product);
+          }}
+          showTrending={true}
+          showHistory={true}
+          showSuggestions={true}
+          className="w-full"
         />
       </div>
 
