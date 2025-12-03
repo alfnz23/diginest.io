@@ -32,7 +32,7 @@
     "@types/three": "^0.178.1",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.5.1",
-    "cmdk": "^0.2.0",
+    "cmdk": "^1.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.456.0",
