@@ -1,40 +1,71 @@
-import Stripe from 'stripe'
+import { NextRequest, NextResponse } from 'next/server';
+import { stripe } from '@/lib/stripe-server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Verify Stripe secret key is available
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return Response.json(
-        { error: 'Stripe secret key not configured' },
-        { status: 500 }
-      )
-    }
+    // Test Stripe connection
+    const account = await stripe.accounts.retrieve();
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Stripe connection successful',
+      account: {
+        id: account.id,
+        country: account.country,
+        default_currency: account.default_currency,
+        email: account.email,
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled,
+      },
+    });
 
-    // Initialize Stripe with secret key
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-06-20',
-    })
-
-    // Test Stripe connection by listing payment methods (limit 1 for quick test)
-    const paymentMethods = await stripe.paymentMethods.list({
-      type: 'card',
-      limit: 1,
-    })
-
-    return Response.json({ 
-      message: "Stripe test successful",
-      connected: true,
-      apiVersion: stripe.getApiField('version'),
-      timestamp: new Date().toISOString()
-    })
-  } catch (error) {
-    console.error('Stripe test error:', error)
-    return Response.json(
-      { 
-        error: 'Stripe connection failed',
-        message: error instanceof Error ? error.message : 'Unknown error'
+  } catch (error: any) {
+    console.error('Stripe test error:', error);
+    
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to connect to Stripe',
+        type: error.type || 'unknown_error',
       },
       { status: 500 }
-    )
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { amount = 1000, currency = 'usd' } = await request.json();
+
+    // Create a test payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+      metadata: {
+        test: 'true',
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      payment_intent: {
+        id: paymentIntent.id,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        status: paymentIntent.status,
+      },
+    });
+
+  } catch (error: any) {
+    console.error('Test payment intent error:', error);
+    
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to create test payment intent',
+        type: error.type || 'unknown_error',
+      },
+      { status: 500 }
+    );
   }
 }
