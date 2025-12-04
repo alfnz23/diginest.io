@@ -64,24 +64,19 @@ export function getSupabaseClient() {
 }
 
 // Get admin client (for server-side operations)
-export function getSupabaseClient() {
-  if (!supabaseClient) {
+export function getSupabaseAdminClient() {
+  if (!supabaseAdminClient) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn("Supabase environment variables not configured");
-      // DŮLEŽITÉ: Při build time vrať dummy client místo null
-      if (typeof window === 'undefined') {
-        // Server-side build - skip
-        return null;
-      }
-      throw new Error('Supabase not configured');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn("Supabase admin environment variables not configured");
+      return null;
     }
-    
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+    supabaseAdminClient = createClient(supabaseUrl, supabaseServiceKey);
   }
-  return supabaseClient;
+  return supabaseAdminClient;
 }
 
 // Legacy exports for backward compatibility
