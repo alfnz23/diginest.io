@@ -1,128 +1,221 @@
-import { createClient } from '@/lib/database';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { getSupabaseAdminClient } from '@/lib/database';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  username?: string;
+  avatar_url?: string;
+  bio?: string;
+  created_at: string;
+  updated_at: string;
+  is_seller: boolean;
+  seller_verified: boolean;
+  total_purchases: number;
+  total_sales?: number;
+  account_status: 'active' | 'suspended' | 'pending';
+}
 
 export async function GET(request: NextRequest) {
+  const supabase = getSupabaseAdminClient();
+  
+  if (!supabase) {
+    return Response.json(
+      { error: 'Database connection not available' },
+      { status: 500 }
+    );
+  }
+
   try {
-    const supabase = createClient();
-
-    // Získání aktuálního uživatele z Supabase Auth
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError) {
-      console.error('Auth error:', authError);
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Authentication failed' },
+    // Get user ID from auth header or query params
+    const authHeader = request.headers.get('authorization');
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    if (!authHeader && !userId) {
+      return Response.json(
+        { error: 'Authorization header or userId parameter required' },
         { status: 401 }
       );
     }
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'User not found' },
-        { status: 401 }
+    let targetUserId = userId;
+
+    // If using auth header, extract user ID from JWT
+    if (authHeader && !userId) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      
+      if (authError || !user) {
+        return Response.json(
+          { error: 'Invalid or expired token' },
+          { status: 401 }
+        );
+      }
+      
+      targetUserId = user.id;
+    }
+
+    if (!targetUserId) {
+      return Response.json(
+        { error: 'User ID not found' },
+        { status: 400 }
       );
     }
 
-    // Načtení profile dat z users tabulky
-    const { data: profile, error: profileError } = await supabase
+    // Fetch user profile with additional stats
+    const { data: user, error: userError } = await supabase
       .from('users')
-      .select('*')
-      .eq('id', user.id)
+      .select(`
+        id,
+        email,
+        full_name,
+        username,
+        avatar_url,
+        bio,
+        created_at,
+        updated_at,
+        is_seller,
+        seller_verified,
+        account_status
+      `)
+      .eq('id', targetUserId)
       .single();
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError);
-      return NextResponse.json(
-        { error: 'Database error', message: 'Failed to fetch user profile' },
+    if (userError) {
+      console.error('Error fetching user:', userError);
+      
+      if (userError.code === 'PGRST116') {
+        return Response.json(
+          { error: 'User not found' },
+          { status: 404 }
+        );
+      }
+      
+      return Response.json(
+        { error: 'Failed to fetch user profile' },
         { status: 500 }
       );
     }
 
-    if (!profile) {
-      return NextResponse.json(
-        { error: 'Not found', message: 'User profile not found' },
-        { status: 404 }
-      );
+    // Get purchase statistics
+    const { count: totalPurchases } = await supabase
+      .from('purchases')
+      .select('id', { count: 'exact' })
+      .eq('user_id', targetUserId)
+      .eq('status', 'completed');
+
+    // Get sales statistics (if user is a seller)
+    let totalSales = 0;
+    if (user.is_seller) {
+      const { count: salesCount } = await supabase
+        .from('purchases')
+        .select('id', { count: 'exact' })
+        .in('product_id', 
+          supabase
+            .from('products')
+            .select('id')
+            .eq('seller_id', targetUserId)
+        )
+        .eq('status', 'completed');
+      
+      totalSales = salesCount || 0;
     }
 
-    // Vrácení profile dat (bez citlivých informací)
-    const {
-      password_hash, // Odstraníme citlivé údaje
-      ...safeProfile
-    } = profile;
+    const userProfile: UserProfile = {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      username: user.username,
+      avatar_url: user.avatar_url,
+      bio: user.bio,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      is_seller: user.is_seller || false,
+      seller_verified: user.seller_verified || false,
+      total_purchases: totalPurchases || 0,
+      total_sales: user.is_seller ? totalSales : undefined,
+      account_status: user.account_status || 'active'
+    };
 
-    return NextResponse.json({
+    return Response.json({
       success: true,
-      data: {
-        user: safeProfile,
-        auth: {
-          id: user.id,
-          email: user.email,
-          email_confirmed_at: user.email_confirmed_at,
-          last_sign_in_at: user.last_sign_in_at,
-        }
-      }
+      data: userProfile
     });
 
   } catch (error) {
-    console.error('Unexpected error in /api/user/profile:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', message: 'An unexpected error occurred' },
+    console.error('Unexpected error in user profile endpoint:', error);
+    
+    return Response.json(
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
 }
 
-// Volitelně můžeme přidat PUT pro aktualizaci profilu
 export async function PUT(request: NextRequest) {
+  const supabase = getSupabaseAdminClient();
+  
+  if (!supabase) {
+    return Response.json(
+      { error: 'Database connection not available' },
+      { status: 500 }
+    );
+  }
+
   try {
-    const supabase = createClient();
-
-    // Získání aktuálního uživatele
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized', message: 'Authentication failed' },
+    // Get user ID from auth header
+    const authHeader = request.headers.get('authorization');
+    
+    if (!authHeader) {
+      return Response.json(
+        { error: 'Authorization header required' },
         { status: 401 }
       );
     }
 
-    // Parsování request body
-    const body = await request.json();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    // Povolená pole pro aktualizaci (bezpečnostní filtr)
+    if (authError || !user) {
+      return Response.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Parse request body
+    const body = await request.json();
     const allowedFields = [
-      'full_name',
-      'display_name', 
-      'bio',
-      'avatar_url',
-      'website_url',
-      'location',
-      'phone'
+      'full_name', 
+      'username', 
+      'bio', 
+      'avatar_url'
     ];
 
+    // Filter only allowed fields
     const updateData: Record<string, any> = {};
-    
-    // Filtrování pouze povolených polí
-    for (const [key, value] of Object.entries(body)) {
-      if (allowedFields.includes(key)) {
-        updateData[key] = value;
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field];
       }
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: 'Bad request', message: 'No valid fields to update' },
+      return Response.json(
+        { error: 'No valid fields to update' },
         { status: 400 }
       );
     }
 
-    // Přidání timestamp
+    // Add updated_at timestamp
     updateData.updated_at = new Date().toISOString();
 
-    // Aktualizace profilu
-    const { data: updatedProfile, error: updateError } = await supabase
+    // Update user profile
+    const { data: updatedUser, error: updateError } = await supabase
       .from('users')
       .update(updateData)
       .eq('id', user.id)
@@ -130,29 +223,110 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (updateError) {
-      console.error('Profile update error:', updateError);
-      return NextResponse.json(
-        { error: 'Database error', message: 'Failed to update profile' },
+      console.error('Error updating user profile:', updateError);
+      
+      // Handle unique constraint violations
+      if (updateError.code === '23505') {
+        return Response.json(
+          { error: 'Username already taken' },
+          { status: 409 }
+        );
+      }
+      
+      return Response.json(
+        { error: 'Failed to update profile' },
         { status: 500 }
       );
     }
 
-    // Vrácení aktualizovaného profilu (bez citlivých dat)
-    const {
-      password_hash,
-      ...safeProfile
-    } = updatedProfile;
-
-    return NextResponse.json({
+    return Response.json({
       success: true,
       message: 'Profile updated successfully',
-      data: safeProfile
+      data: {
+        id: updatedUser.id,
+        full_name: updatedUser.full_name,
+        username: updatedUser.username,
+        bio: updatedUser.bio,
+        avatar_url: updatedUser.avatar_url,
+        updated_at: updatedUser.updated_at
+      }
     });
 
   } catch (error) {
-    console.error('Unexpected error in PUT /api/user/profile:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', message: 'An unexpected error occurred' },
+    console.error('Unexpected error updating user profile:', error);
+    
+    return Response.json(
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const supabase = getSupabaseAdminClient();
+  
+  if (!supabase) {
+    return Response.json(
+      { error: 'Database connection not available' },
+      { status: 500 }
+    );
+  }
+
+  try {
+    // Get user ID from auth header
+    const authHeader = request.headers.get('authorization');
+    
+    if (!authHeader) {
+      return Response.json(
+        { error: 'Authorization header required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return Response.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
+    // Soft delete - mark account as suspended instead of hard delete
+    // This preserves purchase history and referential integrity
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ 
+        account_status: 'suspended',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error suspending user account:', updateError);
+      return Response.json(
+        { error: 'Failed to delete account' },
+        { status: 500 }
+      );
+    }
+
+    return Response.json({
+      success: true,
+      message: 'Account successfully deleted'
+    });
+
+  } catch (error) {
+    console.error('Unexpected error deleting user account:', error);
+    
+    return Response.json(
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
