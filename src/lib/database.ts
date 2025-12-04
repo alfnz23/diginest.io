@@ -83,7 +83,6 @@ export function getSupabaseClient() {
   }
   return supabaseClient;
 }
-}
 
 // Legacy exports for backward compatibility
 export const supabase = {
