@@ -1,91 +1,117 @@
-import { createClient } from '@/lib/database'
-import { NextRequest } from 'next/server'
-import Stripe from 'stripe'
+import { NextRequest, NextResponse } from 'next/server';
+import { stripe } from '@/lib/stripe-server';
+import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(request: NextRequest) {
   try {
-    const { productId, userId } = await request.json()
-    
-    if (!productId || !userId) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 })
+    const { productId, priceId, userId, successUrl, cancelUrl } = await request.json();
+
+    // Validate required fields
+    if (!productId || !priceId || !userId) {
+      return NextResponse.json(
+        { error: 'Missing required fields: productId, priceId, or userId' },
+        { status: 400 }
+      );
     }
 
-    const supabase = createClient()
-    
-    // Načti product
+    // Fetch product details from Supabase
     const { data: product, error: productError } = await supabase
       .from('products')
       .select('*')
       .eq('id', productId)
-      .single()
-    
+      .single();
+
     if (productError || !product) {
-      return Response.json({ error: 'Product not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
     }
 
-    // Zkontroluj, zda produkt není již zakoupen
+    // Check if user already owns this product
     const { data: existingPurchase } = await supabase
       .from('purchases')
       .select('id')
       .eq('user_id', userId)
       .eq('product_id', productId)
       .eq('status', 'completed')
-      .single()
+      .single();
 
     if (existingPurchase) {
-      return Response.json({ error: 'Product already purchased' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'You already own this product' },
+        { status: 400 }
+      );
     }
-    
-    // Vytvoř purchase
-    const { data: purchase, error: purchaseError } = await supabase
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: product.title,
+              description: product.short_description || product.description,
+              images: product.preview_image ? [product.preview_image] : [],
+            },
+            unit_amount: Math.round(product.price * 100), // Convert to cents
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: successUrl || `${request.nextUrl.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${request.nextUrl.origin}/products/${productId}`,
+      metadata: {
+        productId,
+        userId,
+        sellerId: product.seller_id || product.created_by,
+      },
+      customer_email: undefined, // Let customer enter email
+      payment_intent_data: {
+        metadata: {
+          productId,
+          userId,
+          sellerId: product.seller_id || product.created_by,
+        },
+      },
+    });
+
+    // Store pending purchase in database
+    const { error: purchaseError } = await supabase
       .from('purchases')
       .insert({
         user_id: userId,
         product_id: productId,
-        amount: product.price,
+        stripe_session_id: session.id,
         status: 'pending',
-        purchased_at: new Date().toISOString()
-      })
-      .select()
-      .single()
-    
-    if (purchaseError || !purchase) {
-      return Response.json({ error: 'Failed to create purchase' }, { status: 500 })
-    }
-    
-    // Stripe session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: { 
-            name: product.name,
-            description: product.description || undefined
-          },
-          unit_amount: Math.round(product.price * 100),
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success?purchase_id=${purchase.id}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/products/${product.slug}`,
-      metadata: { 
-        purchaseId: purchase.id,
-        productId: productId,
-        userId: userId
-      }
-    })
+        amount: product.price,
+        currency: 'usd',
+        created_at: new Date().toISOString(),
+      });
 
-    return Response.json({ 
+    if (purchaseError) {
+      console.error('Error creating purchase record:', purchaseError);
+      // Continue anyway - webhook will handle it
+    }
+
+    return NextResponse.json({ 
       sessionId: session.id,
-      checkoutUrl: session.url,
-      purchaseId: purchase.id 
-    })
+      url: session.url 
+    });
+
   } catch (error) {
-    console.error('Checkout error:', error)
-    return Response.json({ error: 'Checkout failed' }, { status: 500 })
+    console.error('Checkout error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    );
   }
 }
