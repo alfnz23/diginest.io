@@ -1,104 +1,104 @@
-import { createClient } from '@/lib/database'
-import { NextRequest } from 'next/server'
-import { redirect } from 'next/navigation'
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseClient } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
-    const purchaseId = params.id
-    const userAgent = request.headers.get('user-agent') || ''
-    const forwarded = request.headers.get('x-forwarded-for')
-    const realIP = request.headers.get('x-real-ip')
-    const ipAddress = forwarded?.split(',')[0] || realIP || 'unknown'
+    const { id } = params;
+    const url = new URL(request.url);
+    const token = url.searchParams.get('token');
 
-    if (!purchaseId) {
-      return Response.json({ error: 'Purchase ID required' }, { status: 400 })
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Download token is required' },
+        { status: 400 }
+      );
     }
-    
-    // Ověř purchase
-    const { data: purchase, error: purchaseError } = await supabase
-      .from('purchases')
+
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
+    // Verify download token and get download record
+    const { data: download, error: downloadError } = await supabase
+      .from('downloads')
       .select(`
         *,
-        products(
-          id,
-          name,
-          file_url,
-          download_limit
-        )
+        product:products(name, download_url),
+        purchase:purchases(customer_email, status)
       `)
-      .eq('id', purchaseId)
-      .eq('status', 'completed')
-      .single()
-    
-    if (purchaseError || !purchase) {
-      return Response.json({ error: 'Invalid or incomplete purchase' }, { status: 403 })
+      .eq('id', id)
+      .eq('download_token', token)
+      .single();
+
+    if (downloadError || !download) {
+      return NextResponse.json(
+        { error: 'Invalid download link' },
+        { status: 404 }
+      );
     }
 
-    // Zkontroluj download limit
-    const { count: downloadCount } = await supabase
-      .from('downloads')
-      .select('*', { count: 'exact' })
-      .eq('purchase_id', purchaseId)
-
-    if (purchase.products.download_limit && downloadCount >= purchase.products.download_limit) {
-      return Response.json({ error: 'Download limit exceeded' }, { status: 403 })
+    // Check if purchase is completed
+    if (download.purchase?.status !== 'completed') {
+      return NextResponse.json(
+        { error: 'Purchase not completed' },
+        { status: 403 }
+      );
     }
-    
-    // Vytvoř download record
-    const { error: downloadError } = await supabase
+
+    // Check download limits
+    if (download.download_count >= (download.max_downloads || 5)) {
+      return NextResponse.json(
+        { error: 'Download limit exceeded' },
+        { status: 403 }
+      );
+    }
+
+    // Check expiry
+    if (download.expires_at && new Date(download.expires_at) < new Date()) {
+      return NextResponse.json(
+        { error: 'Download link has expired' },
+        { status: 410 }
+      );
+    }
+
+    // Update download count and last downloaded
+    const { error: updateError } = await supabase
       .from('downloads')
-      .insert({
-        purchase_id: purchase.id,
-        product_id: purchase.product_id,
-        user_id: purchase.user_id,
-        downloaded_at: new Date().toISOString(),
-        ip_address: ipAddress,
-        user_agent: userAgent
+      .update({
+        download_count: download.download_count + 1,
+        last_downloaded_at: new Date().toISOString(),
       })
+      .eq('id', id);
 
-    if (downloadError) {
-      console.error('Failed to create download record:', downloadError)
-      // Pokračuj i když se nepodaří vytvořit download record
+    if (updateError) {
+      console.error('Error updating download count:', updateError);
+      // Continue anyway
     }
-    
-    // Redirect na file nebo vrať download URL
-    if (purchase.products.file_url) {
-      return redirect(purchase.products.file_url)
-    } else {
-      return Response.json({ error: 'File not available' }, { status: 404 })
+
+    // Return download URL or redirect
+    const downloadUrl = download.product?.download_url;
+    if (!downloadUrl) {
+      return NextResponse.json(
+        { error: 'Product file not available' },
+        { status: 404 }
+      );
     }
+
+    // Redirect to actual file or return signed URL
+    return NextResponse.redirect(downloadUrl);
+
   } catch (error) {
-    console.error('Download error:', error)
-    return Response.json({ error: 'Download failed' }, { status: 500 })
-  }
-}
-
-// Pro získání download historie
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const supabase = createClient()
-    const purchaseId = params.id
-    
-    const { data: downloads, error } = await supabase
-      .from('downloads')
-      .select('*')
-      .eq('purchase_id', purchaseId)
-      .order('downloaded_at', { ascending: false })
-
-    if (error) {
-      return Response.json({ error: 'Failed to load downloads' }, { status: 500 })
-    }
-
-    return Response.json({ downloads })
-  } catch (error) {
-    console.error('Download history error:', error)
-    return Response.json({ error: 'Failed to load download history' }, { status: 500 })
+    console.error('Download error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
