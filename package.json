@@ -44,7 +44,7 @@
     "react-hook-form": "^7.54.2",
     "recharts": "^2.8.0",
     "same-runtime": "^0.0.1",
-    "stripe": "^17.5.0",
+    "stripe": "^14.21.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.179.0",
