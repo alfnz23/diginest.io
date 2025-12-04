@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { constructEvent, stripe } from '@/lib/stripe-server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { getSupabaseClient } from '@/lib/database';
+import { constructEvent } from '@/lib/stripe-server';
+import { randomBytes } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,38 +10,136 @@ export async function POST(request: NextRequest) {
 
     if (!signature) {
       return NextResponse.json(
-        { error: 'Missing stripe-signature header' },
+        { error: 'No signature provided' },
         { status: 400 }
       );
     }
 
-    // Construct and verify webhook event
+    // Construct and verify the webhook event
     const event = constructEvent(body, signature);
+    
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Database connection failed');
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
 
     console.log('Stripe webhook event:', event.type);
 
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as any;
-        await handleCheckoutCompleted(session);
+        
+        // Update purchase status to completed
+        const { data: purchase, error: updateError } = await supabase
+          .from('purchases')
+          .update({ 
+            status: 'completed',
+            stripe_payment_intent_id: session.payment_intent,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_session_id', session.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating purchase:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to update purchase' },
+            { status: 500 }
+          );
+        }
+
+        if (!purchase) {
+          console.error('Purchase not found for session:', session.id);
+          return NextResponse.json(
+            { error: 'Purchase not found' },
+            { status: 404 }
+          );
+        }
+
+        // Create download links for each purchased product
+        const cartItems = purchase.cart_items || [];
+        const downloads = [];
+
+        for (const item of cartItems) {
+          const downloadToken = randomBytes(32).toString('hex');
+          const expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + 30); // 30 days expiry
+
+          const { data: download, error: downloadError } = await supabase
+            .from('downloads')
+            .insert({
+              purchase_id: purchase.id,
+              product_id: item.id,
+              user_id: purchase.user_id,
+              download_token: downloadToken,
+              max_downloads: 5,
+              download_count: 0,
+              expires_at: expiryDate.toISOString(),
+            })
+            .select()
+            .single();
+
+          if (downloadError) {
+            console.error('Error creating download:', downloadError);
+            continue;
+          }
+
+          downloads.push({
+            product_name: item.name,
+            download_url: `/api/downloads/${download.id}?token=${downloadToken}`,
+          });
+        }
+
+        // TODO: Send confirmation email with download links
+        console.log('Purchase completed:', {
+          purchaseId: purchase.id,
+          customerEmail: purchase.customer_email,
+          downloads: downloads,
+        });
+
         break;
       }
 
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as any;
-        await handlePaymentSucceeded(paymentIntent);
+      case 'checkout.session.expired': {
+        const session = event.data.object as any;
+        
+        // Update purchase status to failed
+        const { error: updateError } = await supabase
+          .from('purchases')
+          .update({ 
+            status: 'failed',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_session_id', session.id);
+
+        if (updateError) {
+          console.error('Error updating expired purchase:', updateError);
+        }
+
         break;
       }
 
       case 'payment_intent.payment_failed': {
         const paymentIntent = event.data.object as any;
-        await handlePaymentFailed(paymentIntent);
-        break;
-      }
+        
+        // Update purchase status to failed
+        const { error: updateError } = await supabase
+          .from('purchases')
+          .update({ 
+            status: 'failed',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_payment_intent_id', paymentIntent.id);
 
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as any;
-        await handleInvoicePaymentSucceeded(invoice);
+        if (updateError) {
+          console.error('Error updating failed purchase:', updateError);
+        }
+
         break;
       }
 
@@ -61,168 +155,5 @@ export async function POST(request: NextRequest) {
       { error: 'Webhook handler failed' },
       { status: 400 }
     );
-  }
-}
-
-async function handleCheckoutCompleted(session: any) {
-  try {
-    const { productId, userId, sellerId } = session.metadata;
-
-    if (!productId || !userId) {
-      console.error('Missing metadata in checkout session:', session.metadata);
-      return;
-    }
-
-    // Update or create purchase record
-    const { data: existingPurchase, error: fetchError } = await supabase
-      .from('purchases')
-      .select('*')
-      .eq('stripe_session_id', session.id)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Error fetching purchase:', fetchError);
-      return;
-    }
-
-    const purchaseData = {
-      user_id: userId,
-      product_id: productId,
-      stripe_session_id: session.id,
-      stripe_payment_intent_id: session.payment_intent,
-      status: 'completed',
-      amount: session.amount_total / 100, // Convert from cents
-      currency: session.currency,
-      customer_email: session.customer_details?.email,
-      completed_at: new Date().toISOString(),
-    };
-
-    if (existingPurchase) {
-      // Update existing purchase
-      const { error: updateError } = await supabase
-        .from('purchases')
-        .update(purchaseData)
-        .eq('id', existingPurchase.id);
-
-      if (updateError) {
-        console.error('Error updating purchase:', updateError);
-      }
-    } else {
-      // Create new purchase record
-      const { error: insertError } = await supabase
-        .from('purchases')
-        .insert(purchaseData);
-
-      if (insertError) {
-        console.error('Error creating purchase:', insertError);
-      }
-    }
-
-    // Update seller analytics
-    if (sellerId) {
-      await updateSellerAnalytics(sellerId, session.amount_total / 100);
-    }
-
-  } catch (error) {
-    console.error('Error handling checkout completed:', error);
-  }
-}
-
-async function handlePaymentSucceeded(paymentIntent: any) {
-  try {
-    const { productId, userId } = paymentIntent.metadata;
-
-    if (!productId || !userId) {
-      return;
-    }
-
-    // Update purchase status
-    const { error } = await supabase
-      .from('purchases')
-      .update({
-        status: 'completed',
-        stripe_payment_intent_id: paymentIntent.id,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .eq('status', 'pending');
-
-    if (error) {
-      console.error('Error updating purchase on payment success:', error);
-    }
-
-  } catch (error) {
-    console.error('Error handling payment succeeded:', error);
-  }
-}
-
-async function handlePaymentFailed(paymentIntent: any) {
-  try {
-    const { productId, userId } = paymentIntent.metadata;
-
-    if (!productId || !userId) {
-      return;
-    }
-
-    // Update purchase status to failed
-    const { error } = await supabase
-      .from('purchases')
-      .update({
-        status: 'failed',
-        stripe_payment_intent_id: paymentIntent.id,
-      })
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .eq('status', 'pending');
-
-    if (error) {
-      console.error('Error updating purchase on payment failure:', error);
-    }
-
-  } catch (error) {
-    console.error('Error handling payment failed:', error);
-  }
-}
-
-async function handleInvoicePaymentSucceeded(invoice: any) {
-  // Handle subscription payments if needed
-  console.log('Invoice payment succeeded:', invoice.id);
-}
-
-async function updateSellerAnalytics(sellerId: string, amount: number) {
-  try {
-    // Get current analytics
-    const { data: analytics } = await supabase
-      .from('seller_analytics')
-      .select('*')
-      .eq('seller_id', sellerId)
-      .single();
-
-    if (analytics) {
-      // Update existing analytics
-      await supabase
-        .from('seller_analytics')
-        .update({
-          total_revenue: (analytics.total_revenue || 0) + amount,
-          total_sales: (analytics.total_sales || 0) + 1,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('seller_id', sellerId);
-    } else {
-      // Create new analytics record
-      await supabase
-        .from('seller_analytics')
-        .insert({
-          seller_id: sellerId,
-          total_revenue: amount,
-          total_sales: 1,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-    }
-
-  } catch (error) {
-    console.error('Error updating seller analytics:', error);
   }
 }
