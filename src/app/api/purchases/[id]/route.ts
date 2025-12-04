@@ -1,57 +1,71 @@
-import { createClient } from '@/lib/database'
-import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server';
+import { getSupabaseClient } from '@/lib/database';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
-    const purchaseId = params.id
-
-    if (!purchaseId) {
-      return Response.json({ error: 'Purchase ID required' }, { status: 400 })
-    }
+    const supabase = getSupabaseClient();
     
-    const { data: purchase, error: purchaseError } = await supabase
+    if (!supabase) {
+      return Response.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
+    const purchaseId = params.id;
+
+    // Get purchase details with related data
+    const { data: purchase, error } = await supabase
       .from('purchases')
       .select(`
         *,
-        products(
+        products (
           id,
           name,
           description,
           price,
-          thumbnail_url,
-          file_url,
-          slug,
-          category_id
+          image_url,
+          category,
+          seller:users!products_seller_id_fkey (
+            id,
+            email,
+            full_name
+          )
         ),
-        downloads(
+        users (
           id,
-          downloaded_at,
-          ip_address
+          email,
+          full_name
         )
       `)
       .eq('id', purchaseId)
-      .single()
-    
-    if (purchaseError || !purchase) {
-      return Response.json({ error: 'Purchase not found' }, { status: 404 })
+      .single();
+
+    if (error) {
+      console.error('Error fetching purchase:', error);
+      return Response.json(
+        { error: 'Purchase not found' },
+        { status: 404 }
+      );
     }
 
-    // Přidej počet downloadů
-    const downloadCount = purchase.downloads?.length || 0
-    
-    return Response.json({ 
-      purchase: {
-        ...purchase,
-        download_count: downloadCount
-      }
-    })
+    if (!purchase) {
+      return Response.json(
+        { error: 'Purchase not found' },
+        { status: 404 }
+      );
+    }
+
+    return Response.json(purchase);
   } catch (error) {
-    console.error('Purchase detail error:', error)
-    return Response.json({ error: 'Failed to load purchase' }, { status: 500 })
+    console.error('API Error:', error);
+    return Response.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -60,28 +74,43 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
-    const purchaseId = params.id
-    const { status, payment_intent_id } = await request.json()
+    const supabase = getSupabaseClient();
+    
+    if (!supabase) {
+      return Response.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
 
-    const { data: purchase, error } = await supabase
+    const purchaseId = params.id;
+    const body = await request.json();
+
+    // Update purchase status or other allowed fields
+    const { data: updatedPurchase, error } = await supabase
       .from('purchases')
       .update({
-        status,
-        payment_intent_id,
+        status: body.status,
         updated_at: new Date().toISOString()
       })
       .eq('id', purchaseId)
       .select()
-      .single()
+      .single();
 
-    if (error || !purchase) {
-      return Response.json({ error: 'Failed to update purchase' }, { status: 500 })
+    if (error) {
+      console.error('Error updating purchase:', error);
+      return Response.json(
+        { error: 'Failed to update purchase' },
+        { status: 400 }
+      );
     }
 
-    return Response.json({ purchase })
+    return Response.json(updatedPurchase);
   } catch (error) {
-    console.error('Purchase update error:', error)
-    return Response.json({ error: 'Failed to update purchase' }, { status: 500 })
+    console.error('API Error:', error);
+    return Response.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
