@@ -26,7 +26,7 @@
     "@react-three/drei": "9.108.3",
     "@react-three/fiber": "8.16.8",
     "@stripe/stripe-js": "^5.4.0",
-    "stripe": "^17.5.0"
+    "stripe": "^14.0.0"
     "@supabase/supabase-js": "^2.46.1",
     "@types/react": "18.3.17",
     "@types/react-dom": "18.3.5",
