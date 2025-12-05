@@ -1,0 +1,49 @@
+// Client-side call to setup admin endpoint
+const setupAdmin = async (adminData: {
+  email: string;
+  password: string;
+  name: string;
+}) => {
+  try {
+    const response = await fetch('/api/setup-admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(adminData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to setup admin');
+    }
+
+    const result = await response.json();
+    console.log('Admin setup successful:', result);
+    return result;
+
+  } catch (error) {
+    console.error('Error setting up admin:', error);
+    throw error;
+  }
+};
+
+// Example usage
+const callSetupAdmin = async () => {
+  try {
+    const result = await setupAdmin({
+      email: 'admin@diginest.io',
+      password: 'secure_admin_password',
+      name: 'Admin User'
+    });
+    
+    alert('Admin setup successful!');
+    console.log('Setup result:', result);
+    
+  } catch (error) {
+    alert(`Setup failed: ${error.message}`);
+  }
+};
+
+// Call it immediately
+callSetupAdmin();
