@@ -1,100 +1,199 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient } from '@/lib/database';
-import { NextResponse } from 'next/server';
 
-// One-time setup endpoint to create the admin user
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const supabaseAdmin = getSupabaseAdminClient();
-    if (!supabaseAdmin) {
+    const { email, password, name } = await request.json();
+
+    // Validate input
+    if (!email || !password || !name) {
       return NextResponse.json(
-        { error: 'Database connection not available' },
+        { error: 'Email, password, and name are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long' },
+        { status: 400 }
+      );
+    }
+
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database connection failed' },
         { status: 500 }
       );
     }
 
-    // Check if admin already exists
-    const { data: existingUser } = await supabaseAdmin
+    // Check if admin user already exists
+    const { data: existingAdmin, error: checkError } = await supabase
       .from('users')
-      .select('id, email, role')
-      .eq('email', 'redlinebadpacks@gmail.com')
+      .select('id, email')
+      .eq('role', 'admin')
       .single();
 
-    if (existingUser) {
-      return NextResponse.json({
-        success: false,
-        message: 'Admin user already exists',
-        user: existingUser
-      });
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Error checking existing admin:', checkError);
+      return NextResponse.json(
+        { error: 'Database error while checking admin status' },
+        { status: 500 }
+      );
     }
 
-    // Create admin user
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: 'redlinebadpacks@gmail.com',
-      password: 'heslo123',
-      email_confirm: true,
+    if (existingAdmin) {
+      return NextResponse.json(
+        { 
+          error: 'Admin user already exists',
+          existingAdmin: {
+            email: existingAdmin.email,
+            id: existingAdmin.id
+          }
+        },
+        { status: 409 }
+      );
+    }
+
+    // Create auth user
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Skip email verification for admin setup
       user_metadata: {
-        full_name: 'Admin User',
-        role: 'admin'
+        name,
+        role: 'admin',
+        created_by: 'setup-admin-endpoint',
+        created_at: new Date().toISOString()
       }
     });
 
     if (authError) {
+      console.error('Auth user creation error:', authError);
       return NextResponse.json(
-        { error: `Auth creation failed: ${authError.message}` },
-        { status: 400 }
-      );
-    }
-
-    if (!authData.user) {
-      return NextResponse.json(
-        { error: 'No user data returned' },
+        { error: `Failed to create auth user: ${authError.message}` },
         { status: 500 }
       );
     }
 
-    // Insert into users table
-    const { data: userData, error: userError } = await supabaseAdmin
+    if (!authUser.user) {
+      return NextResponse.json(
+        { error: 'Failed to create auth user - no user returned' },
+        { status: 500 }
+      );
+    }
+
+    // Create user profile in users table
+    const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .insert({
-        id: authData.user.id,
-        email: 'redlinebadpacks@gmail.com',
-        full_name: 'Admin User',
+        id: authUser.user.id,
+        email: email.toLowerCase(),
+        name,
         role: 'admin',
         is_active: true,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        email_verified: true,
+        last_login: null,
+        metadata: {
+          created_by: 'setup-admin-endpoint',
+          setup_completed: true,
+          permissions: ['all']
+        }
       })
       .select()
       .single();
 
-    if (userError) {
-      // Cleanup auth user if users table insert failed
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
       
+      // Cleanup: Delete the auth user if profile creation failed
+      try {
+        await supabase.auth.admin.deleteUser(authUser.user.id);
+      } catch (cleanupError) {
+        console.error('Failed to cleanup auth user:', cleanupError);
+      }
+
       return NextResponse.json(
-        { error: `User table insert failed: ${userError.message}` },
-        { status: 400 }
+        { error: `Failed to create user profile: ${profileError.message}` },
+        { status: 500 }
+      );
+    }
+
+    // Generate session token for immediate login
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: email
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Admin user created successfully',
+      admin: {
+        id: userProfile.id,
+        email: userProfile.email,
+        name: userProfile.name,
+        role: userProfile.role,
+        created_at: userProfile.created_at
+      },
+      loginUrl: sessionData?.properties?.action_link || null
+    }, { status: 201 });
+
+  } catch (error) {
+    console.error('Setup admin error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// GET method to check admin status
+export async function GET() {
+  try {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
+    // Check if any admin users exist
+    const { data: adminUsers, error } = await supabase
+      .from('users')
+      .select('id, email, name, created_at')
+      .eq('role', 'admin')
+      .eq('is_active', true);
+
+    if (error) {
+      console.error('Error checking admin users:', error);
+      return NextResponse.json(
+        { error: 'Database error' },
+        { status: 500 }
       );
     }
 
     return NextResponse.json({
-      success: true,
-      message: 'Admin user created successfully!',
-      user: {
-        id: userData.id,
-        email: userData.email,
-        full_name: userData.full_name,
-        role: userData.role,
-        created_at: userData.created_at
-      },
-      credentials: {
-        email: 'redlinebadpacks@gmail.com',
-        password: 'heslo123'
-      }
+      hasAdmin: adminUsers && adminUsers.length > 0,
+      adminCount: adminUsers?.length || 0,
+      admins: adminUsers || []
     });
 
   } catch (error) {
-    console.error('Setup error:', error);
+    console.error('Check admin status error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
