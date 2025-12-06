@@ -8,7 +8,7 @@ export interface EmailTemplate {
   subject: string;
   htmlContent: string;
   trigger: EmailTrigger;
-  delay?: number; // delay in hours
+  delay?: number; // delay v hodinách
 }
 
 export interface EmailTrigger {
@@ -38,7 +38,7 @@ interface EmailStats {
   byType: Record<string, number>;
 }
 
-// Mock email service - in production, integrate with SendGrid, Mailchimp, etc.
+// Mock email service - v produkci napoj na skutečný provider (Resend, SendGrid, Mailgun…)
 class EmailAutomationService {
   private events: EmailEvent[] = [];
   private templates: EmailTemplate[] = [];
@@ -95,54 +95,55 @@ class EmailAutomationService {
             <p>Now that you're part of the DigiNest.io community, here are some insider tips to maximize your digital products:</p>
 
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0;">💡 Pro Tips:</h3>
-              <ol style="color: #4b5563;">
-                <li><strong>Set up your digital planner:</strong> Import to your favorite app (GoodNotes, Notability, etc.)</li>
-                <li><strong>Create a routine:</strong> Use your planner daily for best results</li>
-                <li><strong>Join our community:</strong> Share your progress and get inspired</li>
-              </ol>
+              <ul style="color: #4b5563;">
+                <li>Set up a dedicated folder system for all your downloads</li>
+                <li>Use cloud storage to access your products from anywhere</li>
+                <li>Schedule weekly review sessions to apply what you've learned</li>
+              </ul>
             </div>
-
-            <p>P.S. Keep an eye out for our weekly productivity tips and exclusive discounts!</p>
-          </div>
-        `,
-      },
-      {
-        id: "abandoned-cart",
-        name: "Abandoned Cart Recovery",
-        subject: "You left something amazing in your cart! ✨",
-        trigger: { type: "abandoned_cart" },
-        delay: 2,
-        htmlContent: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #1f2937;">Don't miss out on these great products!</h1>
-            <p>Hi there,</p>
-            <p>We noticed you left some amazing items in your cart. Don't worry, we've saved them for you!</p>
-
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0;">Your Cart Items:</h3>
-              <p>Items in your cart</p>
-              <p><strong>Total: $[cart_total]</strong></p>
-            </div>
-
-            <p style="background: #fef3c7; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b;">
-              <strong>⏰ Limited Time:</strong> Use code <strong>SAVE10</strong> for 10% off your order!
-            </p>
 
             <p style="text-align: center;">
               <a href="/products" style="background: #1f2937; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                Complete Your Purchase
+                Explore More Products
               </a>
             </p>
+
+            <p>Keep creating,<br>The DigiNest.io Team</p>
           </div>
         `,
       },
       {
-        id: "product-recommendations",
+        id: "abandoned-cart-1",
+        name: "Abandoned Cart Reminder",
+        subject: "Did you forget something? 🛒",
+        trigger: { type: "abandoned_cart" },
+        delay: 1,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #1f2937;">You left something behind!</h1>
+            <p>Hi there,</p>
+            <p>We noticed you left some amazing digital products in your cart. Complete your purchase to start using them right away:</p>
+
+            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p>Cart items summary here</p>
+            </div>
+
+            <p style="text-align: center;">
+              <a href="/cart" style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                Return to Cart
+              </a>
+            </p>
+
+            <p>Need help?<br>Reply to this email and we'll be happy to assist.</p>
+          </div>
+        `,
+      },
+      {
+        id: "product-recommendation-1",
         name: "Product Recommendations",
-        subject: "Handpicked just for you: New arrivals you'll love 🎯",
+        subject: "Handpicked digital products just for you ✨",
         trigger: { type: "product_recommendation" },
-        delay: 0,
+        delay: 48,
         htmlContent: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #1f2937;">Products We Think You'll Love</h1>
@@ -173,7 +174,9 @@ class EmailAutomationService {
     const templates = this.templates.filter((t) => t.trigger.type === type);
 
     for (const template of templates) {
-      const eventId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const eventId = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
       const scheduledAt = new Date();
       if (template.delay && template.delay > 0) {
         scheduledAt.setHours(scheduledAt.getHours() + template.delay);
@@ -183,7 +186,8 @@ class EmailAutomationService {
         id: eventId,
         userId,
         type,
-        data: { ...data, templateId: template.id },
+        // KLÍČOVÝ FIX: správné sloučení dat + templateId
+        data: { ...(data || {}), templateId: template.id },
         scheduledAt,
         status: "pending",
       };
@@ -219,12 +223,12 @@ class EmailAutomationService {
         return;
       }
 
-      // In production, integrate with actual email service
+      // Zatím jen mock – tady se v produkci napojí /api route + emailService
       console.log(
         `📧 Sending email: ${template.subject} to user ${event.userId}`,
       );
 
-      // Simulate email sending
+      // Simulace odeslání
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       event.status = "sent";
@@ -251,7 +255,7 @@ class EmailAutomationService {
 
     console.log("📊 Email analytics:", analytics);
 
-    // In production, send to analytics service (Google Analytics, Mixpanel, etc.)
+    // V produkci: poslat do GA/Mixpanel apod.
   }
 
   // Get email automation stats
