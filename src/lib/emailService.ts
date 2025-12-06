@@ -144,7 +144,9 @@ class MailgunProvider implements EmailProvider {
       const response = await fetch(this.baseUrl, {
         method: "POST",
         headers: {
-          Authorization: `Basic ${Buffer.from(`api:${this.apiKey}`).toString("base64")}`,
+          Authorization: `Basic ${Buffer.from(`api:${this.apiKey}`).toString(
+            "base64",
+          )}`,
         },
         body: formData,
       });
@@ -172,31 +174,33 @@ export const emailTemplates = {
           <p style="color: #e5e7eb; margin: 10px 0 0 0;">Premium digital products for modern creators</p>
         </div>
 
-        <div style="padding: 40px; background: #f9fafb;">
-          <h2 style="color: #111827; margin-bottom: 20px;">Hello {{user_name}}!</h2>
-
-          <p style="color: #374151; line-height: 1.6; margin-bottom: 20px;">
-            Thank you for joining DigiNest.io! We're excited to have you as part of our community of creators and digital enthusiasts.
+        <div style="padding: 30px 40px; background: #ffffff;">
+          <p style="color: #111827;">Hi {{user_name}},</p>
+          <p style="color: #4b5563; line-height: 1.6;">
+            Thank you for joining <strong>DigiNest.io</strong>! You're now part of a community of creators, entrepreneurs, and digital product lovers.
           </p>
 
-          <div style="background: white; padding: 30px; border-radius: 8px; margin: 30px 0;">
-            <h3 style="color: #111827; margin-bottom: 15px;">What's Next?</h3>
-            <ul style="color: #374151; line-height: 1.8;">
-              <li>Browse our collection of premium digital products</li>
-              <li>Save your favorites to your wishlist</li>
-              <li>Get notified about new releases and special offers</li>
-              <li>Access your purchase history anytime</li>
-            </ul>
-          </div>
+          <h3 style="color: #111827; margin-top: 24px;">Here's what you can do next:</h3>
+          <ul style="color: #4b5563; padding-left: 20px; line-height: 1.6;">
+            <li>Browse our curated digital product marketplace</li>
+            <li>Discover tools to improve your productivity and focus</li>
+            <li>Save your favorite products and build your own digital stack</li>
+          </ul>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="{{site_url}}/products" style="background: #3b82f6; color: white; text-decoration: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; display: inline-block;">
-              Start Shopping →
+            <a href="{{site_url}}/products"
+               style="background: #2563eb; color: white; text-decoration: none; padding: 14px 28px; border-radius: 9999px; font-weight: bold; display: inline-block;">
+              Explore Products →
             </a>
           </div>
 
-          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            Questions? Reply to this email or contact us at support@diginest.io
+          <p style="color: #6b7280; font-size: 14px;">
+            If you have any questions, just reply to this email. We're here to help.
+          </p>
+
+          <p style="color: #111827; margin-top: 24px;">
+            Cheers,<br/>
+            <strong>The DigiNest.io Team</strong>
           </p>
         </div>
 
@@ -210,11 +214,11 @@ export const emailTemplates = {
   },
 
   orderConfirmation: {
-    subject: "Order Confirmation - {{order_id}}",
+    subject: "Your DigiNest.io order {{order_id}} is confirmed ✅",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">Order Confirmed! ✅</h1>
+        <div style="background: #16a34a; padding: 40px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 26px;">Order Confirmed ✅</h1>
           <p style="color: #d1fae5; margin: 10px 0 0 0;">Your digital products are ready</p>
         </div>
 
@@ -235,7 +239,8 @@ export const emailTemplates = {
           </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="{{site_url}}/account" style="background: #3b82f6; color: white; text-decoration: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; display: inline-block;">
+            <a href="{{site_url}}/account"
+               style="background: #3b82f6; color: white; text-decoration: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; display: inline-block;">
               View Purchase History →
             </a>
           </div>
