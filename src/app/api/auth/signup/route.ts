@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ SIGNUP API: User record created successfully:', {
       id: insertedUser.id,
       email: insertedUser.email,
-      full_name: insertedUser.full_name,
+      name: insertedUser.name,
       role: insertedUser.role
     });
 
