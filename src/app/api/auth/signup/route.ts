@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const userData = {
       id: authData.user.id,
       email: authData.user.email!,
-      full_name: name,
+      name: name,
       role: 'customer',
       is_seller: false,
       subscription_status: 'free',
