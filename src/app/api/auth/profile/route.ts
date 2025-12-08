@@ -1,57 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/database';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseClient();
     if (!supabase) {
       return NextResponse.json(
-        { error: 'Database not configured' },
+        { error: 'Database connection failed' },
         { status: 500 }
       );
     }
 
-    // Get user session from request headers
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Missing or invalid authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Get current user from auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Invalid token' },
+        { error: 'User not authenticated' },
         { status: 401 }
       );
     }
 
-    // Fetch user profile from database
-    const { data: profile, error: profileError } = await supabase
+    // Get user profile from database
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('id', user.id)
       .single();
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError);
+    if (userError) {
+      console.error('User profile error:', userError);
       return NextResponse.json(
-        { error: 'Failed to fetch profile' },
-        { status: 500 }
+        { error: 'User profile not found' },
+        { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      user: profile
+      user: {
+        id: userData.id,
+        email: userData.email,
+        name: userData.full_name,
+        role: userData.role,
+        isAdmin: userData.role === 'admin',
+        isSeller: userData.is_seller,
+        avatarUrl: userData.avatar_url,
+        subscriptionStatus: userData.subscription_status,
+        createdAt: userData.created_at,
+        updatedAt: userData.updated_at,
+      },
     });
 
-  } catch (error: any) {
-    console.error('Profile API error:', error);
+  } catch (error) {
+    console.error('Profile error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -61,45 +63,40 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const updates = await request.json();
-    
+    const { name, avatarUrl } = await request.json();
+
     const supabase = getSupabaseClient();
     if (!supabase) {
       return NextResponse.json(
-        { error: 'Database not configured' },
+        { error: 'Database connection failed' },
         { status: 500 }
       );
     }
 
-    // Get user session from request headers
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Missing or invalid authorization header' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Invalid token' },
+        { error: 'User not authenticated' },
         { status: 401 }
       );
     }
 
     // Update user profile
-    const { data, error } = await supabase
+    const { data: userData, error: updateError } = await supabase
       .from('users')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({
+        full_name: name,
+        avatar_url: avatarUrl,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', user.id)
       .select()
       .single();
 
-    if (error) {
-      console.error('Profile update error:', error);
+    if (updateError) {
+      console.error('Profile update error:', updateError);
       return NextResponse.json(
         { error: 'Failed to update profile' },
         { status: 500 }
@@ -108,11 +105,20 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: data
+      user: {
+        id: userData.id,
+        email: userData.email,
+        name: userData.full_name,
+        role: userData.role,
+        isAdmin: userData.role === 'admin',
+        isSeller: userData.is_seller,
+        avatarUrl: userData.avatar_url,
+        subscriptionStatus: userData.subscription_status,
+      },
     });
 
-  } catch (error: any) {
-    console.error('Profile update API error:', error);
+  } catch (error) {
+    console.error('Profile update error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
