@@ -24,7 +24,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<success: boolean, message: string>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
