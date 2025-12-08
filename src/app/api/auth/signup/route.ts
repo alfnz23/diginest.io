@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       password,
       options: {
         data: {
-          full_name: name
+          full_name: email
         }
       }
     });
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       id: authData.user.id,
       email: authData.user.email!,
       name: name,
-      full_name: name,
+      full_name: email,
       role: 'customer',
       is_seller: false,
       subscription_status: 'free',
