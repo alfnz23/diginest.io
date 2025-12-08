@@ -1,12 +1,12 @@
-import { getSupabaseClient } from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import { getSupabaseAdminClient } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
-    // Validate input
+    // Validation
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return NextResponse.json(
         { error: 'Database connection failed' },
@@ -22,52 +22,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sign in with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.toLowerCase(),
-      password: password,
-    });
+    // Find user by email
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .single();
 
-    if (authError) {
-      console.error('Authentication error:', authError);
+    if (userError || !user) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    // Get user profile from database
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', authData.user.id)
-      .single();
-
-    if (userError) {
-      console.error('User profile error:', userError);
+    // Verify password with bcryptjs
+    const isValidPassword = await bcrypt.compare(password, user.password_hash || '');
+    
+    if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
+        { error: 'Invalid email or password' },
+        { status: 401 }
       );
     }
 
+    // Update last login
+    await supabase
+      .from('users')
+      .update({ 
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+
+    // Return user data (without password)
+    const { password_hash, ...userData } = user;
+    
     return NextResponse.json({
       success: true,
+      message: 'Login successful',
       user: {
-        id: userData.id,
-        email: userData.email,
-        name: userData.full_name,
-        role: userData.role,
-        isAdmin: userData.role === 'admin',
-        isSeller: userData.is_seller,
-        avatarUrl: userData.avatar_url,
-        subscriptionStatus: userData.subscription_status,
-      },
-      session: {
-        access_token: authData.session.access_token,
-        refresh_token: authData.session.refresh_token,
-        expires_at: authData.session.expires_at,
-      },
+        ...userData,
+        isAdmin: user.role === 'admin'
+      }
     });
 
   } catch (error) {
