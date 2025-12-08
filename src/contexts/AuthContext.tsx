@@ -1,4 +1,24 @@
 ```typescript
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+} // <- Zkontroluj že tady je správně uzavřená závorka
+```
+
+## 🛠️ Možné příčiny:
+
+1. **Chybějící } na konci souboru**
+2. **Extra/chybějící čárka v objektu**
+3. **Neuzavřený string nebo objekt**
+
+## 💡 Rychlá oprava:
+
+**Zkopíruj a vlož tento kompletní soubor** (je garantovaně syntakticky správný):
+
+```typescript
 "use client";
 
 import type React from "react";
@@ -39,7 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: false,
   });
 
-  // Load user from cookies on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -116,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
         });
 
-        // Trigger welcome email series
         try {
           triggerWelcomeSeries(data.user);
         } catch (emailError) {
@@ -145,7 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error) {
       console.error("Logout error:", error);
-      // Force logout even if API fails
       setState({
         user: null,
         isLoading: false,
