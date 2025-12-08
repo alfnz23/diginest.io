@@ -13,9 +13,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
-import { triggerWelcomeSeries } from "@/lib/emailAutomation";
-import { User, LogIn, UserPlus, Loader2 } from "lucide-react";
+import { User, LogIn, UserPlus, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 export function AuthDialog() {
@@ -25,23 +25,38 @@ export function AuthDialog() {
     email: "",
     password: "",
     name: "",
+    confirmPassword: "", // ← PŘIDÁNO: Potvrzení hesla
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(""); // ← PŘIDÁNO: Success zprávy
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("login"); // ← PŘIDÁNO: Tab kontrola
+
+  // ← PŘIDÁNO: Reset funkcí
+  const resetForms = () => {
+    setLoginData({ email: "", password: "" });
+    setRegisterData({ email: "", password: "", name: "", confirmPassword: "" });
+    setError("");
+    setSuccess("");
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+
+    if (!loginData.email || !loginData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
 
     try {
       const success = await login(loginData.email, loginData.password);
       if (success) {
         setIsOpen(false);
-        setLoginData({ email: "", password: "" });
+        resetForms();
       } else {
-        setError(
-          "Invalid email or password. Try: customer@example.com / password123",
-        );
+        setError("Invalid email or password. Please try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -49,35 +64,60 @@ export function AuthDialog() {
     }
   };
 
+  // ← HLAVNÍ OPRAVA: Kompletně přepsaná handleRegister funkce
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+
+    // Validation
+    if (!registerData.name || !registerData.email || !registerData.password || !registerData.confirmPassword) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    if (registerData.password !== registerData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
     if (registerData.password.length < 6) {
       setError("Password must be at least 6 characters long");
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registerData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     try {
-      const success = await register(
-        registerData.email,
-        registerData.password,
-        registerData.name,
-      );
-      if (success) {
-        setIsOpen(false);
-        setRegisterData({ email: "", password: "", name: "" });
+      // ← KLÍČOVÁ OPRAVA: register nyní vrací {success, message} objekt!
+      const result = await register(registerData.email, registerData.password, registerData.name);
+      
+      if (result.success) {
+        setSuccess(result.message);
+        setRegisterData({ email: "", password: "", name: "", confirmPassword: "" });
+        // Switch to login tab after successful registration
+        setTimeout(() => {
+          setActiveTab("login");
+          setSuccess("");
+        }, 3000);
       } else {
-        setError("Email already exists or registration failed");
+        setError(result.message); // ← TOTO zobrazí správnou chybovou hlášku z API!
       }
     } catch (error) {
       console.error("Registration error:", error);
-      setError("An error occurred during registration. Please try again.");
+      setError("Network error occurred. Please check your connection and try again.");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      if (!open) resetForms();
+    }}>
       <DialogTrigger asChild>
         <Button className="bg-neutral-900 hover:bg-neutral-800">
           <User className="mr-2 h-4 w-4" />
@@ -92,7 +132,7 @@ export function AuthDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Sign In</TabsTrigger>
             <TabsTrigger value="register">Sign Up</TabsTrigger>
@@ -131,9 +171,10 @@ export function AuthDialog() {
               </div>
 
               {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                  {error}
-                </div>
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
               <Button
@@ -209,11 +250,38 @@ export function AuthDialog() {
                   required
                 />
               </div>
+              
+              {/* ← PŘIDÁNO: Potvrzení hesla */}
+              <div>
+                <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                <Input
+                  id="register-confirm-password"
+                  type="password"
+                  value={registerData.confirmPassword}
+                  onChange={(e) =>
+                    setRegisterData((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
+                  placeholder="Confirm your password"
+                  required
+                />
+              </div>
 
               {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                  {error}
-                </div>
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* ← PŘIDÁNO: Success hlášky */}
+              {success && (
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">{success}</AlertDescription>
+                </Alert>
               )}
 
               <Button
@@ -234,6 +302,17 @@ export function AuthDialog() {
                 )}
               </Button>
             </form>
+
+            <p className="text-xs text-center text-muted-foreground">
+              By creating an account, you agree to our{" "}
+              <Link href="/terms" className="underline hover:text-primary">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="underline hover:text-primary">
+                Privacy Policy
+              </Link>
+            </p>
           </TabsContent>
         </Tabs>
       </DialogContent>
