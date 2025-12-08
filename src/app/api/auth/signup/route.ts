@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     const userResponse = {
       id: insertedUser.id,
       email: insertedUser.email,
-      name: insertedUser.full_name,
+      name: insertedUser.name,
       role: insertedUser.role,
       isAdmin: insertedUser.role === 'admin',
       avatar_url: insertedUser.avatar_url,
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: userResponse,
       message: authData.user.email_confirmed_at 
-        ? 'Account created successfully' 
+        ? 'Account created successfully'
         : 'Account created. Please check your email to confirm your account.',
       requiresEmailConfirmation: !authData.user.email_confirmed_at
     });
@@ -128,4 +128,3 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
