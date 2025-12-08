@@ -24,7 +24,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<success: boolean, message: string>;
+  register: (email: string, password: string, name: string) => Promise<{success: boolean, message: string}>; // ← OPRAVA 1
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -91,11 +91,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ← OPRAVA 2: Kompletně přepsaná register funkce
   const register = async (
     email: string,
     password: string,
     name: string,
-  ): Promise<boolean> => {
+  ): Promise<{success: boolean, message: string}> => {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
 
@@ -106,6 +107,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const data = await response.json();
+      
+      setState((prev) => ({ ...prev, isLoading: false }));
 
       if (data.success && data.user) {
         setState({
@@ -115,20 +118,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         try {
-          triggerWelcomeSeries(data.user);
+          await triggerWelcomeSeries(email, name);
         } catch (emailError) {
           console.warn("Email automation error:", emailError);
         }
 
-        return true;
+        return {
+          success: true,
+          message: data.message || "Registration successful! Welcome to DigiNest."
+        };
+      } else {
+        return {
+          success: false,
+          message: data.error || data.message || "Registration failed. Please try again."
+        };
       }
-
-      setState((prev) => ({ ...prev, isLoading: false }));
-      return false;
     } catch (error) {
       console.error("Registration error:", error);
       setState((prev) => ({ ...prev, isLoading: false }));
-      return false;
+      return {
+        success: false,
+        message: "Network error occurred. Please check your connection and try again."
+      };
     }
   };
 
