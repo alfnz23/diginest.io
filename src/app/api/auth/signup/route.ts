@@ -1,12 +1,12 @@
-import { getSupabaseAdminClient } from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import { getSupabaseAdminClient } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password, name } = await request.json();
 
-    // Validate input
+    // Validation
     if (!email || !password || !name) {
       return NextResponse.json(
         { error: 'Email, password, and name are required' },
@@ -43,68 +43,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: email.toLowerCase(),
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: name,
-      },
-    });
+    // Hash password with bcryptjs
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    if (authError) {
-      console.error('Supabase Auth error:', authError);
+    // Create user
+    const { data: newUser, error: createError } = await supabase
+      .from('users')
+      .insert({
+        email: email.toLowerCase(),
+        full_name: name,
+        name: name,
+        password_hash: hashedPassword,
+        role: 'customer',
+        subscription_status: 'free',
+        is_seller: false
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error('Error creating user:', createError);
       return NextResponse.json(
         { error: 'Failed to create user account' },
         { status: 500 }
       );
     }
 
-    // Hash password for backup storage (optional)
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    // Determine role (admin for specific email)
-    const role = email.toLowerCase() === 'redlinebadpacks@gmail.com' ? 'admin' : 'customer';
-
-    // Insert user data into users table
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email: email.toLowerCase(),
-        full_name: name,
-        role: role,
-        password_hash: passwordHash,
-        subscription_status: 'free',
-        is_seller: role === 'admin',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (userError) {
-      console.error('Database insert error:', userError);
-      // Try to clean up auth user if database insert failed
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      return NextResponse.json(
-        { error: 'Failed to create user profile' },
-        { status: 500 }
-      );
-    }
-
+    // Return user data (without password)
+    const { password_hash, ...userData } = newUser;
+    
     return NextResponse.json({
       success: true,
-      user: {
-        id: userData.id,
-        email: userData.email,
-        name: userData.full_name,
-        role: userData.role,
-        isAdmin: userData.role === 'admin',
-        isSeller: userData.is_seller,
-      },
-    });
+      message: 'User created successfully',
+      user: userData
+    }, { status: 201 });
 
   } catch (error) {
     console.error('Signup error:', error);
