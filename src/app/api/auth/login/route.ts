@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdminClient } from '@/lib/database';
+import { createClient } from '@supabase/supabase-js';
+
+// Vytvořte Supabase admin client přímo
+function getSupabaseAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ Missing Supabase environment variables');
+    return null;
+  }
+  
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}
 
 export async function POST(request: NextRequest) {
   console.log('🔐 LOGIN API: Starting login process...');
-  
+     
   try {
     const body = await request.json();
     const { email, password } = body;
@@ -46,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Step 2: Fetch additional user data from users table
     console.log('🔍 LOGIN API: Fetching user data from users table...');
-    const { data: userData, error: userError } = await supabase
+    let { data: userData, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('id', authData.user.id)
@@ -54,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (userError) {
       console.log('⚠️ LOGIN API: User not found in users table:', userError.message);
-      
+             
       // Create user record if it doesn't exist (for existing Supabase Auth users)
       console.log('🔧 LOGIN API: Creating missing user record...');
       const { data: newUserData, error: insertError } = await supabase
