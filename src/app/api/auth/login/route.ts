@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // 🔐 HARDCODED ADMIN CREDENTIALS
 const HARDCODED_ADMIN = {
-  email: "admin@diginest.io",
-  password: "Admin123!",
+  email: "redlinebadpacks@gmail.com",
+  password: "admin123",
   id: "admin-hardcoded-123",
   role: "admin"
 };
