@@ -1,32 +1,39 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
 
-  // Check if the request is for an admin route
-  if (pathname.startsWith('/admin')) {
-    // For now, we'll let the client-side protection handle this
-    // In a production app, you'd want to validate the user's session here
-    // and check their admin status from a secure source
+  // Získat session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-    // You could implement JWT validation here or check a secure cookie
-    // For this demo, we rely on client-side protection
-    return NextResponse.next();
+  // Pokud je to admin route
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (!session) {
+      // Přesměrování na login pokud není přihlášený
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+
+    // Kontrola admin role
+    const { data: user } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single()
+
+    if (!user || user.role !== 'admin') {
+      // Přesměrování na hlavní stránku pokud není admin
+      return NextResponse.redirect(new URL('/', req.url))
+    }
   }
 
-  return NextResponse.next();
+  return res
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
-};
+  matcher: ['/admin/:path*']
+}
